@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="WOOVERSE悟境科技——首款集成AI视觉辅助、4K摄录与SOS救援系统的智能滑雪镜，让每一次滑雪更安全、更专业、更可分享。">
+    <meta name="keywords" content="智能滑雪镜,AI滑雪教练,滑雪装备,WOOVERSE,Flow S,雪场SOS">
+    <meta property="og:title" content="WOOVERSE | 看见雪道的每一次呼吸">
+    <meta property="og:description" content="首款集成AI视觉辅助与SOS救援系统的专业滑雪镜">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="./images/v4.png">
+    <title>WOOVERSE | 看见雪道的每一次呼吸</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* ===== CSS 变量与设计系统 ===== */
+        :root {
+            --primary: #7D2DBE;
+            --primary-light: #9B4DDB;
+            --primary-dark: #5A1D8F;
+            --secondary: #96E6FF;
+            --secondary-deep: #5BC8E8;
+            --text: #1A1A2E;
+            --text-muted: #4B5563;
+            --bg: #FFFFFF;
+            --bg-secondary: #F5F3FA;
+            --border: #E5E5EA;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --font-sans: "Helvetica Neue", Helvetica, Arial, "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        body {
+            font-family: var(--font-sans);
+            color: var(--text);
+            background: var(--bg);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== 导航栏滚动效果 ===== */
+        #navbar {
+            transition: all 0.4s ease;
+        }
+        #navbar.scrolled {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(24px);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* ===== 卡片 Hover 顶部渐变条 ===== */
+        .card-hover {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .card-hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(125, 45, 190, 0.12);
+            border-color: rgba(125, 45, 190, 0.15);
+        }
+        .card-hover:hover::before {
+            transform: scaleX(1);
+        }
+
+        /* ===== 按钮 Hover ===== */
+        .btn-primary {
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(125, 45, 190, 0.3);
+        }
+        .btn-secondary {
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: #F0E6FA;
+            transform: translateY(-2px);
+        }
+
+        /* ===== 滚动渐显 Reveal ===== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== 弹窗动画 ===== */
+        .modal-overlay {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+        }
+        .modal-container {
+            transform: scale(0.95) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-overlay.active .modal-container {
+            transform: scale(1) translateY(0);
+        }
+
+        /* ===== 移动端菜单 ===== */
+        #mobile-menu {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ===== Hero 背景光晕 ===== */
+        .hero-bg {
+            background: 
+                radial-gradient(circle at 80% 30%, rgba(125, 45, 190, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(150, 230, 255, 0.04) 0%, transparent 40%),
+                #FFFFFF;
+        }
+
+        /* ===== 渐变文字 ===== */
+        .text-gradient {
+            background: linear-gradient(135deg, var(--text) 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ===== 图片下方紫色光晕 ===== */
+        .img-glow {
+            position: relative;
+        }
+        .img-glow::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 40px;
+            background: radial-gradient(ellipse, rgba(125, 45, 190, 0.25) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* ===== 新闻图片 Hover ===== */
+        .news-img-wrap {
+            overflow: hidden;
+            border-radius: 12px;
+        }
+        .news-img-wrap img {
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .news-img-wrap:hover img {
+            transform: scale(1.03);
+        }
+
+        /* ===== 团队头像渐变 ===== */
+        .avatar-gradient {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        /* ===== 生态闭环箭头 ===== */
+        .eco-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.5rem;
+            font-weight: 300;
+        }
+        @media (max-width: 768px) {
+            .eco-arrow {
+                transform: rotate(90deg);
+                margin: 8px 0;
+            }
+        }
+
+        /* ===== 表单 Focus ===== */
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(125, 45, 190, 0.1);
+        }
+
+        /* ===== 成功状态 ===== */
+        .success-check {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--success), #16a34a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            margin: 0 auto 16px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- ===== 导航栏 ===== -->
+    <nav id="navbar" class="fixed top-0 w-full h-[72px] z-50">
+        <div class="max-w-[1200px] mx-auto h-full flex items-center justify-between px-[5%]">
+            <a href="./index.html" class="flex items-center">
+                <img src="./images/logo-full.png" alt="WOOVERSE" class="h-8 w-auto">
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a href="./index.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">首页</a>
+                <a href="./flow-s.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">Flow S</a>
+                <a href="./solution.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">解决方案</a>
+                <a href="./ai-coach.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">AI教练</a>
+                <a href="./about.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">关于我们</a>
+                <a href="./news.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">新闻</a>
+            </div>
+            <div class="hidden md:block">
+                <button onclick="openModal('modal-booking')" class="h-11 px-6 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white text-sm font-semibold shadow-lg hover:-translate-y-0.5 transition-all btn-primary">
+                    预约体验
+                </button>
+            </div>
+            <button id="menu-toggle" class="md:hidden text-[var(--text)] text-2xl">☰</button>
+        </div>
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="fixed inset-0 bg-white/98 backdrop-blur-xl z-40 translate-x-full md:hidden flex flex-col items-center justify-center gap-8">
+            <button id="menu-close" class="absolute top-6 right-6 text-3xl text-[var(--text)]">×</button>
+            <a href="./index.html" class="text-2xl font-semibold text-[var(--text)]">首页</a>
+            <a href="./flow-s.html" class="text-2xl font-semibold text-[var(--text)]">Flow S</a>
+            <a href="./solution.html" class="text-2xl font-semibold text-[var(--text)]">解决方案</a>
+            <a href="./ai-coach.html" class="text-2xl font-semibold text-[var(--text)]">AI教练</a>
+            <a href="./about.html" class="text-2xl font-semibold text-[var(--text)]">关于我们</a>
+            <a href="./news.html" class="text-2xl font-semibold text-[var(--text)]">新闻</a>
+            <button onclick="openModal('modal-booking')" class="mt-4 h-12 px-8 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white font-semibold">预约体验</button>
+        </div>
+    </nav>
+
+    <main>
+        <!-- ===== Hero 首屏 ===== -->
+        <section class="hero-bg min-h-[100vh] md:min-h-[90vh] pt-[128px] pb-20 flex items-center">
+            <div class="max-w-[1200px] mx-auto px-[5%] w-full">
+                <div class="flex flex-col md:flex-row items-center gap-12 lg:gap-16">
+                    <!-- 左文 -->
+                    <div class="w-full md:w-[55%] reveal">
+                        <div class="inline-block px-4 py-1.5 rounded-[20px] bg-[#F0E6FA] text-[var(--primary)] text-xs font-bold tracking-wide mb-6">
+                            滑雪，你与双手都该自由
+                        </div>
+                        <h1 class="text-[32px] md:text-[56px] font-extrabold leading-[1.1] mb-6 text-gradient">
+                            看见雪道的<br>每一次呼吸
+                        </h1>
+                        <p class="text-[15px] md:text-lg text-[var(--text-muted)] leading-relaxed mb-6 max-w-[520px]">
+                            首款集成AI视觉辅助、4K摄录与SOS救援系统的专业滑雪镜，让每一次滑行都有据可依、有险可救。
+                        </p>
+                        <div class="inline-flex items-center px-4 py-2 rounded-full border border-[var(--border)] text-sm text-[var(--text-muted)] mb-8">
+                            2026雪季首发 · 限量体验官招募
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button onclick="openModal('modal-booking')" class="h-11 px-8 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white text-sm font-semibold shadow-lg btn-primary">
+                                预约首批体验
+                            </button>
+                            <a href="./flow-s.html" class="h-11 px-8 rounded-full border-[1.5px] border-[var(--primary)] text-[var(--primary)] text-sm font-semibold flex items-center justify-center btn-secondary">
+                                了解技术参数 →
+                            </a>
+                        </div>
+                    </div>
+                    <!-- 右图 -->
+                    <div class="w-full md:w-[45%] reveal" style="transition-delay: 0.1s;">
+                        <div class="img-glow">
+                            <img src="./images/v4.png" alt="WOOVERSE Flow S 智能雪镜" class="w-full max-w-[560px] rounded-2xl shadow-2xl mx-auto">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== 核心功能 ===== -->
+        <section class="bg-[var(--bg-secondary)] py-24">
+            <div class="max-w-[1200px] mx-auto px-[5%]">
+                <div class="text-center mb-16 reveal">
+                    <div class="inline-block px-4 py-1.5 rounded-[20px] bg-[#F0E6FA] text-[var(--primary)] text-xs font-bold tracking-wide mb-4">
+                        核心能力
+                    </div>
+                    <h2 class="text-[24px] md:text-[40px] font-bold leading-[1.2]">不止是一副雪镜</h2>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- 卡片1 -->
+                    <div class="bg-white border border-[var(--border)] rounded-2xl p-8 card-hover reveal">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] flex items-center justify-center text-white text-xl mb-5">
+                            🥽
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">AR HUD显示</h3>
+                        <p class="text-[15px] text-[var(--text-muted)] leading-relaxed">实时速度、海拔、导航信息，眼前即现</p>
+                    </div>
+                    <!-- 卡片2 -->
+                    <div class="bg-white border border-[var(--border)] rounded-2xl p-8 card-hover reveal" style="transition-delay: 0.1s;">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] flex items-center justify-center text-white text-xl mb-5">
+                            🆘
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">一键SOS救援</h3>
+                        <p class="text-[15px] text-[var(--text-muted)] leading-relaxed">意外自动报警+精准定位，救援响应＜30秒</p>
+                    </div>
+                    <!-- 卡片3 -->
+                    <div class="bg-white border border-[var(--border)] rounded-2xl p-8 card-hover reveal" style="transition-delay: 0.2s;">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] flex items-center justify-center text-white text-xl mb-5">
+                            🤖
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">AI滑雪教练</h3>
+                        <p class="text-[15px] text-[var(--text-muted)] leading-relaxed">上传视频，AI分析动作姿态，生成评分报告</p>
+                    </div>
+                    <!-- 卡片4 -->
+                    <div class="bg-white border border-[var(--border)] rounded-2xl p-8 card-hover reveal" style="transition-delay: 0.3s;">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] flex items-center justify-center text-white text-xl mb-5">
+                            🌐
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">雪场互联生态</h3>
+                        <p class="text-[15px] text-[var(--text-muted)] leading-relaxed">电子围栏+好友位置共享，雪场数字化管理</p>
+                    </div>
+                </div>
+                <div class="text-center mt-12 reveal">
+                    <a href="./flow-s.html" class="inline-flex h-11 px-8 rounded-full border-[1.5px] border-[var(--primary)] text-[var(--primary)] text-sm font-semibold items-center btn-secondary">
+                        查看完整参数 →
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SOS 安全生态 ===== -->
+        <section class="bg-white py-24">
+            <div class="max-w-[1200px] mx-auto px-[5%]">
+                <div class="flex flex-col md:flex-row items-center gap-12 lg:gap-16">
+                    <!-- 左图 -->
+                    <div class="w-full md:w-1/2 reveal">
+                        <div class="relative">
+                            <img src="./images/tob1.png" alt="SOS HUD界面" class="w-full rounded-2xl shadow-xl">
+                            <img src="./images/tob2.png" alt="SOS手机后台" class="w-[80%] rounded-2xl shadow-lg -mt-10 ml-auto relative z-10 border-4 border-white">
+                        </div>
+                    </div>
+                    <!-- 右文 -->
+                    <div class="w-full md:w-1/2 reveal" style="transition-delay: 0.1s;">
+                        <div class="inline-block px-4 py-1.5 rounded-[20px] bg-[#F0E6FA] text-[var(--primary)] text-xs font-bold tracking-wide mb-4">
+                            安全生态
+                        </div>
+                        <h2 class="text-[24px] md:text-[40px] font-bold leading-[1.2] mb-6 text-gradient">
+                            不只是雪镜，<br>是雪道安全网络
+                        </h2>
+                        <p class="text-[15px] md:text-lg text-[var(--text-muted)] leading-relaxed mb-8">
+                            当意外发生，每一秒都关乎生命。WOOVERSE SOS系统整合雪镜端一键报警、基站定位与雪场救援调度，构建从个人到雪场的完整安全闭环。
+                        </p>
+                        <div class="flex flex-wrap gap-8 mb-8">
+                            <div>
+                                <div class="text-2xl md:text-3xl font-bold text-[var(--primary)]">＜30秒</div>
+                                <div class="text-sm text-[var(--text-muted)] mt-1">救援响应时间</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl md:text-3xl font-bold text-[var(--primary)]">50+</div>
+                                <div class="text-sm text-[var(--text-muted)] mt-1">合作雪场覆盖</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl md:text-3xl font-bold text-[var(--primary)]">99.9%</div>
+                                <div class="text-sm text-[var(--text-muted)] mt-1">GPS+北斗双模定位精度</div>
+                            </div>
+                        </div>
+                        <a href="./solution.html" class="inline-flex h-11 px-8 rounded-full border-[1.5px] border-[var(--primary)] text-[var(--primary)] text-sm font-semibold items-center btn-secondary">
+                            我是雪场负责人 →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== 生态闭环 ===== -->
+        <section class="bg-[var(--bg-secondary)] py-24">
+            <div class="max-w-[1200px] mx-auto px-[5%]">
+                <div class="text-center mb-16 reveal">
+                    <h2 class="text-[24px] md:text-[40px] font-bold leading-[1.2]">硬件是入口，网络才是产品</h2>
+                </div>
+                <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 mb-12">
+                    <!-- 节点1 -->
+                    <div class="bg-white border border-[var(--border)] rounded-2xl p-8 w-full md:w-[280px] text-center card-hover reveal">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] flex items-center justify-center text-white text-2xl mx-auto mb-4">
+                            🥽
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">Flow S 雪镜</h3>
+                        <p class="text-sm text-[var(--text-muted)] leading-relaxed">4K摄录+AR显示+SOS报警，雪道上的智能中枢</p>
+                    </div>
+                    <!-- 箭头 -->
+                    <div class="eco-arrow reveal" style="transition-delay: 0.1s;">→</div>
+                    <!-- 节点2（高亮） -->
+                    <div class="rounded-2xl p-8 w-full md:w-[280px] text-center card-hover reveal bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] text-white shadow-xl" style="transition-delay: 0.2s;">
+                        <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-white text-2xl mx-auto mb-4">
+                            📱
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">WOOVERSE App</h3>
+                        <p class="text-sm text-white/80 leading-relaxed">视频云端分析、滑行数据复盘、好友轨迹共享</p>
+                    </div>
+                    <!-- 箭头 -->
+                    <div class="eco-arrow reveal" style="transition-delay: 0.3s;">→</div>
+                    <!-- 节点3 -->
+                    <div class="bg-white border border-[var(--border)] rounded-2xl p-8 w-full md:w-[280px] text-center card-hover reveal" style="transition-delay: 0.4s;">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--secondary-deep)] to-[var(--secondary)] flex items-center justify-center text-white text-2xl mx-auto mb-4">
+                            🏔️
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2">雪场管理平台</h3>
+                        <p class="text-sm text-[var(--text-muted)] leading-relaxed">实时人流监控、电子围栏管理、救援调度系统</p>
+                    </div>
+                </div>
+                <p class="text-center text-[var(--text-muted)] reveal" style="transition-delay: 0.5s;">
+                    从个人装备到雪场网络，WOOVERSE 构建滑雪产业数字化闭环。
+                </p>
+            </div>
+        </section>
+
+        <!-- ===== 信任背书（团队） ===== -->
+        <section class="bg-white py-24">
+            <div class="max-w-[1200px] mx-auto px-[5%]">
+                <div class="text-center mb-16 reveal">
+                    <h2 class="text-[24px] md:text-[40px] font-bold leading-[1.2]">能做事的人，不是只会说的人</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- 成员1 -->
+                    <div class="bg-white border border-[var(--border)] rounded-2xl p-8 card-hover reveal text-center md:text-left">
+                        <div class="w-14 h-14 rounded-full avatar-gradient flex items-center justify-center text-white font-bold text-lg mx-auto md:mx-0 mb-4">
+                            DL
+                        </div>
+                        <h3 class="text-lg font-semibold">Daniel Liu</h3>
+                        <p class="text-[var(--secondary-deep)] text-sm font-medium mb-3">CEO / 联合创始人</p>
+                        <p class="text-[15px] text-[var(--text-muted)] leading-relaxed">
+                            十年创业经验，多次成功0-1项目落地。懂赚钱：从0到1构建商业闭环
+                        </p>
+                    </div>
+                    <!-- 成员2 -->
+                    <div class="bg-white border border-[var(--border)] rounded-2xl p-8 card-hover reveal text-center md:text-left" style="transition-delay: 0.1s;">
+                        <div class="w-14 h-14 rounded-full avatar-gradient flex items-center justify-center text-white font-bold text-lg mx-auto md:mx-0 mb-4">
+                            DL
+                        </div>
+                        <h3 class="text-lg font-semibold">David Lee</h3>
+                        <p class="text-[var(--secondary-deep)] text-sm font-medium mb-3">CCO / 联合创始人</p>
+                        <p class="text-[15px] text-[var(--text-muted)] leading-relaxed">
+                            十年全球500强商务高管，拥有深厚的销售管理、流程制定与B端商务能力。懂卖货：搞定复杂的销售链路关系，0-1搭建销售体系
+                        </p>
+                    </div>
+                    <!-- 成员3 -->
+                    <div class="bg-white border border-[var(--border)] rounded-2xl p-8 card-hover reveal text-center md:text-left" style="transition-delay: 0.2s;">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center text-white font-bold text-lg mx-auto md:mx-0 mb-4">
+                            CT
+                        </div>
+                        <h3 class="text-lg font-semibold">技术合伙人（待定）</h3>
+                        <p class="text-[var(--secondary-deep)] text-sm font-medium mb-3">CTO / 联合创始人</p>
+                        <p class="text-[15px] text-[var(--text-muted)] leading-relaxed">
+                            前大疆影像算法工程师，主导运动相机视觉算法与端侧AI部署
+                        </p>
+                    </div>
+                </div>
+                <div class="text-center mt-12 reveal">
+                    <a href="./about.html" class="inline-flex h-11 px-8 rounded-full border-[1.5px] border-[var(--primary)] text-[var(--primary)] text-sm font-semibold items-center btn-secondary">
+                        了解更多 →
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== 最新动态 ===== -->
+        <section class="bg-[var(--bg-secondary)] py-20">
+            <div class="max-w-[1200px] mx-auto px-[5%]">
+                <div class="flex items-end justify-between mb-12 reveal">
+                    <h2 class="text-[24px] md:text-[40px] font-bold leading-[1.2]">最新动态</h2>
+                    <a href="./news.html" class="text-sm text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors hidden md:inline-flex items-center gap-1">
+                        查看全部 →
+                    </a>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- 新闻1 -->
+                    <a href="./news.html" class="group block reveal">
+                        <div class="news-img-wrap mb-4 aspect-video bg-gray-100">
+                            <img src="./images/v1.1.png" alt="WOOVERSE完成天使轮融资" class="w-full h-full object-cover">
+                        </div>
+                        <div class="text-xs text-[#9CA3AF] mb-2">2026.04</div>
+                        <h3 class="text-base font-semibold leading-snug group-hover:text-[var(--primary)] transition-colors">
+                            WOOVERSE完成天使轮融资，蓝驰创投领投
+                        </h3>
+                    </a>
+                    <!-- 新闻2 -->
+                    <a href="./news.html" class="group block reveal" style="transition-delay: 0.1s;">
+                        <div class="news-img-wrap mb-4 aspect-video bg-gradient-to-br from-[var(--bg-secondary)] to-[#E8E5F0] flex items-center justify-center">
+                            <span class="text-4xl">🥽</span>
+                        </div>
+                        <div class="text-xs text-[#9CA3AF] mb-2">2026.03</div>
+                        <h3 class="text-base font-semibold leading-snug group-hover:text-[var(--primary)] transition-colors">
+                            Flow S智能雪镜通过GB/T眼镜抗冲击与耐低温测试
+                        </h3>
+                    </a>
+                    <!-- 新闻3 -->
+                    <a href="./news.html" class="group block reveal" style="transition-delay: 0.2s;">
+                        <div class="news-img-wrap mb-4 aspect-video bg-gradient-to-br from-[var(--bg-secondary)] to-[#E8E5F0] flex items-center justify-center">
+                            <span class="text-4xl">🏔️</span>
+                        </div>
+                        <div class="text-xs text-[#9CA3AF] mb-2">2026.02</div>
+                        <h3 class="text-base font-semibold leading-snug group-hover:text-[var(--primary)] transition-colors">
+                            WOOVERSE与崇礼万龙滑雪场签署战略合作协议
+                        </h3>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ===== Footer ===== -->
+    <footer class="bg-[#1A1A2E] text-white">
+        <!-- 投资者横幅 -->
+        <div class="bg-[#0F0F1A] h-14 flex items-center justify-center text-sm text-gray-400">
+            <span>WOOVERSE 正在开放融资</span>
+            <span class="mx-2">|</span>
+            <a href="./investors.html" class="text-[var(--secondary)] hover:underline">投资者请访问 /investors →</a>
+        </div>
+        <div class="max-w-[1200px] mx-auto px-[5%] py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-8">
+            <div>
+                <img src="./images/logo.png" alt="WOOVERSE" class="h-8 w-auto brightness-0 invert mb-4">
+                <p class="text-sm text-gray-400 leading-relaxed max-w-[280px]">
+                    WOOVERSE悟境科技，专注智能滑雪装备与雪场数字化解决方案，让每一次滑雪更安全、更专业、更可分享。
+                </p>
+            </div>
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">产品</h4>
+                <ul class="space-y-2 text-sm text-gray-400">
+                    <li><a href="./flow-s.html" class="hover:text-[var(--secondary)] transition-colors">Flow S</a></li>
+                    <li><a href="./ai-coach.html" class="hover:text-[var(--secondary)] transition-colors">AI教练</a></li>
+                    <li><a href="#" class="hover:text-[var(--secondary)] transition-colors">配件</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">合作</h4>
+                <ul class="space-y-2 text-sm text-gray-400">
+                    <li><a href="./solution.html" class="hover:text-[var(--secondary)] transition-colors">雪场合作</a></li>
+                    <li><a href="#" onclick="openModal('modal-coach')" class="hover:text-[var(--secondary)] transition-colors">教练入驻</a></li>
+                    <li><a href="#" onclick="openModal('modal-kol')" class="hover:text-[var(--secondary)] transition-colors">KOL合作</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">公司</h4>
+                <ul class="space-y-2 text-sm text-gray-400">
+                    <li><a href="./about.html" class="hover:text-[var(--secondary)] transition-colors">关于我们</a></li>
+                    <li><a href="./news.html" class="hover:text-[var(--secondary)] transition-colors">新闻动态</a></li>
+                    <li><a href="#" class="hover:text-[var(--secondary)] transition-colors">加入我们</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">联系</h4>
+                <ul class="space-y-2 text-sm text-gray-400">
+                    <li><a href="./solution.html" class="hover:text-[var(--secondary)] transition-colors">商务咨询</a></li>
+                    <li><a href="./investors.html" class="hover:text-[var(--secondary)] transition-colors">投资者关系</a></li>
+                    <li><a href="#" class="hover:text-[var(--secondary)] transition-colors">客服支持</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-white/10 max-w-[1200px] mx-auto px-[5%] py-6 flex flex-col md:flex-row justify-between items-center text-xs text-white/40">
+            <span>© 2026 WOOVERSE Technology. All rights reserved.</span>
+            <div class="flex gap-4 mt-2 md:mt-0">
+                <a href="#" class="hover:text-white/60">隐私政策</a>
+                <a href="#" class="hover:text-white/60">服务条款</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===== 弹窗：预约体验 ===== -->
+    <div id="modal-booking" class="modal-overlay fixed inset-0 z-[60] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="modal-container bg-white rounded-[20px] p-8 md:p-10 max-w-[480px] w-full relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('modal-booking')" class="absolute top-4 right-4 text-2xl text-[var(--text-muted)] hover:text-[var(--text)]">×</button>
+            <div id="booking-form-content">
+                <h3 class="text-2xl font-bold mb-2">预约体验</h3>
+                <p class="text-sm text-[var(--text-muted)] mb-6">成为 Flow S 首批体验官，抢先感受智能滑雪镜</p>
+                <form onsubmit="handleBookingSubmit(event)">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">姓名 <span class="text-[var(--danger)]">*</span></label>
+                        <input type="text" id="booking-name" required class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm" placeholder="请输入您的姓名">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">手机号 <span class="text-[var(--danger)]">*</span></label>
+                        <input type="tel" id="booking-phone" required pattern="^1[3-9]\d{9}$" class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm" placeholder="请输入大陆手机号">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">常用雪场</label>
+                        <input type="text" id="booking-resort" class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm" placeholder="例如：崇礼万龙">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-2">滑雪水平</label>
+                        <select id="booking-level" class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm bg-white">
+                            <option value="初学者">初学者</option>
+                            <option value="中级">中级</option>
+                            <option value="高级">高级</option>
+                            <option value="专业">专业</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full h-12 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white font-semibold btn-primary">
+                        提交预约
+                    </button>
+                </form>
+            </div>
+            <div id="booking-success" class="hidden text-center py-8">
+                <div class="success-check">✓</div>
+                <h3 class="text-xl font-bold mb-2">预约成功</h3>
+                <p class="text-[var(--text-muted)]">我们会尽快联系您</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 弹窗：教练入驻（占位） ===== -->
+    <div id="modal-coach" class="modal-overlay fixed inset-0 z-[60] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="modal-container bg-white rounded-[20px] p-8 max-w-[480px] w-full relative">
+            <button onclick="closeModal('modal-coach')" class="absolute top-4 right-4 text-2xl text-[var(--text-muted)]">×</button>
+            <h3 class="text-2xl font-bold mb-2">教练入驻</h3>
+            <p class="text-sm text-[var(--text-muted)] mb-4">功能即将开放，敬请期待</p>
+        </div>
+    </div>
+
+    <!-- ===== 弹窗：KOL合作（占位） ===== -->
+    <div id="modal-kol" class="modal-overlay fixed inset-0 z-[60] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="modal-container bg-white rounded-[20px] p-8 max-w-[480px] w-full relative">
+            <button onclick="closeModal('modal-kol')" class="absolute top-4 right-4 text-2xl text-[var(--text-muted)]">×</button>
+            <h3 class="text-2xl font-bold mb-2">KOL合作</h3>
+            <p class="text-sm text-[var(--text-muted)] mb-4">功能即将开放，敬请期待</p>
+        </div>
+    </div>
+
+    <!-- ===== JavaScript ===== -->
+    <script>
+        // 导航栏滚动监听
+        const navbar = document.getElementById('navbar');
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.scrollY;
+            if (currentScroll > 40) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+            lastScroll = currentScroll;
+        });
+
+        // 移动端菜单
+        const menuToggle = document.getElementById('menu-toggle');
+        const menuClose = document.getElementById('menu-close');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.remove('translate-x-full');
+        });
+        menuClose.addEventListener('click', () => {
+            mobileMenu.classList.add('translate-x-full');
+        });
+
+        // 弹窗控制
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('hidden');
+            // 强制重绘以触发过渡
+            requestAnimationFrame(() => {
+                modal.classList.add('active', 'flex');
+            });
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('active');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+            document.body.style.overflow = '';
+        }
+        // 点击遮罩关闭
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) closeModal(overlay.id);
+            });
+        });
+        // ESC 关闭
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    closeModal(modal.id);
+                });
+            }
+        });
+
+        // 预约表单提交
+        function handleBookingSubmit(e) {
+            e.preventDefault();
+            const phone = document.getElementById('booking-phone').value;
+            const phoneRegex = /^1[3-9]\d{9}$/;
+            if (!phoneRegex.test(phone)) {
+                alert('请输入正确的大陆手机号');
+                return;
+            }
+            document.getElementById('booking-form-content').classList.add('hidden');
+            document.getElementById('booking-success').classList.remove('hidden');
+            // 3秒后自动关闭
+            setTimeout(() => closeModal('modal-booking'), 3000);
+        }
+
+        // 滚动渐显 Reveal
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+    </script>
+</body>
+</html>

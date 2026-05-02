@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="WOO 雪时刻 —— 你的随身AI滑雪教练。上传视频，AI分析动作姿态，生成WOO评分报告。">
+    <title>WOO 雪时刻 — AI滑雪教练 | WOOVERSE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        :root {
+            --primary: #7D2DBE; --primary-light: #9B4DDB; --primary-dark: #5A1D8F;
+            --secondary: #96E6FF; --secondary-deep: #5BC8E8;
+            --text: #1A1A2E; --text-muted: #4B5563;
+            --bg: #FFFFFF; --bg-secondary: #F5F3FA; --border: #E5E5EA;
+            --success: #22c55e; --warning: #f59e0b; --danger: #ef4444;
+            --font-sans: "Helvetica Neue", Helvetica, Arial, "Microsoft YaHei", "PingFang SC", sans-serif;
+        }
+        body { font-family: var(--font-sans); color: var(--text); background: var(--bg); }
+        #navbar.scrolled { background: rgba(255,255,255,0.92); backdrop-filter: blur(24px); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 0.9s cubic-bezier(0.16,1,0.3,1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .btn-primary { transition: all 0.3s ease; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(125,45,190,0.3); }
+        .btn-secondary { transition: all 0.3s ease; }
+        .btn-secondary:hover { background: #F0E6FA; transform: translateY(-2px); }
+        .modal-overlay { opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.active { opacity: 1; }
+        .modal-container { transform: scale(0.95) translateY(20px); transition: all 0.3s cubic-bezier(0.16,1,0.3,1); }
+        .modal-overlay.active .modal-container { transform: scale(1) translateY(0); }
+        .success-check { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; margin: 0 auto 16px; }
+
+        /* AI教练专用 */
+        .upload-zone { border: 2px dashed var(--border); border-radius: 16px; padding: 60px; text-align: center; cursor: pointer; transition: all 0.3s ease; background: rgba(125,45,190,0.02); }
+        .upload-zone:hover, .upload-zone.dragover { border-color: var(--primary); background: rgba(125,45,190,0.05); }
+        .radio-card { flex: 1; padding: 16px; border: 2px solid var(--border); border-radius: 12px; cursor: pointer; text-align: center; transition: all 0.2s; background: white; }
+        .radio-card:hover { border-color: var(--primary); }
+        .radio-card.selected { border-color: var(--primary); background: rgba(125,45,190,0.08); color: var(--primary); }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 4px; transition: width 0.5s ease; width: 0%; }
+        .step { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: 0.75rem; background: var(--bg-secondary); color: #9CA3AF; transition: all 0.3s; }
+        .step.active { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; }
+        .step.completed { background: var(--success); color: white; }
+        .score-number { font-size: 4rem; font-weight: 800; line-height: 1; }
+        .rank-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .issue-item { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; border-left: 4px solid; }
+        .issue-critical { border-left-color: var(--danger); }
+        .issue-high { border-left-color: var(--warning); }
+        .issue-medium { border-left-color: #3b82f6; }
+        .issue-low { border-left-color: var(--success); }
+        .severity-critical { background: rgba(239,68,68,0.1); color: var(--danger); }
+        .severity-high { background: rgba(245,158,11,0.1); color: var(--warning); }
+        .severity-medium { background: rgba(59,130,246,0.1); color: #3b82f6; }
+        .severity-low { background: rgba(34,197,94,0.1); color: var(--success); }
+        .highlight-item { background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(34,197,94,0.04)); border: 1px solid rgba(34,197,94,0.3); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .collapsible-header { padding: 14px 16px; background: var(--bg-secondary); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; border-radius: 8px; transition: all 0.2s; }
+        .collapsible-header:hover { background: #E8E5F0; }
+        .collapsible-body { display: none; padding: 16px; background: white; border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; }
+        .collapsible-body.open { display: block; }
+        .collapsible-arrow { transition: transform 0.2s; }
+        .collapsible-header.open .collapsible-arrow { transform: rotate(180deg); }
+        .json-preview { background: var(--bg-secondary); border-radius: 8px; padding: 12px; font-family: 'Courier New', monospace; font-size: 0.8rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; color: var(--text-muted); max-height: 300px; overflow-y: auto; }
+        .toast { position: fixed; bottom: 24px; right: 24px; padding: 14px 20px; border-radius: 10px; color: white; font-weight: 500; z-index: 1000; animation: slideIn 0.3s ease; max-width: 400px; }
+        .toast.success { background: var(--success); } .toast.error { background: var(--danger); } .toast.info { background: var(--primary); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .file-preview { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bg-secondary); border-radius: 10px; margin-top: 16px; border: 1px solid var(--border); }
+        .remove-btn { padding: 4px 10px; border-radius: 6px; border: none; background: rgba(239,68,68,0.1); color: var(--danger); cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+        .remove-btn:hover { background: rgba(239,68,68,0.2); }
+        .validation-hint { font-size: 0.8rem; color: var(--danger); margin-top: 8px; display: none; }
+        .validation-hint.show { display: block; }
+        .dim-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+        .action-btn { padding: 4px 12px; border-radius: 6px; border: 1px solid var(--primary); color: var(--primary); background: transparent; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+        .action-btn:hover { background: var(--primary); color: white; }
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+    </style>
+</head>
+<body class="antialiased">
+
+<nav id="navbar" class="fixed top-0 w-full h-[72px] z-50 transition-all duration-400">
+    <div class="max-w-[1200px] mx-auto h-full flex items-center justify-between px-[5%]">
+        <a href="./index.html" class="flex items-center"><img src="./images/logo-full.png" alt="WOOVERSE" class="h-8 w-auto"></a>
+        <div class="hidden md:flex items-center gap-8">
+            <a href="./index.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">首页</a>
+            <a href="./flow-s.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">Flow S</a>
+            <a href="./solution.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">解决方案</a>
+            <a href="./ai-coach.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">AI教练</a>
+            <a href="./about.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">关于我们</a>
+            <a href="./news.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">新闻</a>
+        </div>
+        <div class="hidden md:block">
+            <button onclick="openModal('modal-booking')" class="h-11 px-6 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white text-sm font-semibold shadow-lg btn-primary">预约体验</button>
+        </div>
+        <button id="menu-toggle" class="md:hidden text-[var(--text)] text-2xl">☰</button>
+    </div>
+    <div id="mobile-menu" class="fixed inset-0 bg-white/98 backdrop-blur-xl z-40 translate-x-full transition-transform duration-400 md:hidden flex flex-col items-center justify-center gap-8">
+        <button id="menu-close" class="absolute top-6 right-6 text-3xl text-[var(--text)]">×</button>
+        <a href="./index.html" class="text-2xl font-semibold text-[var(--text)]">首页</a>
+        <a href="./flow-s.html" class="text-2xl font-semibold text-[var(--text)]">Flow S</a>
+        <a href="./solution.html" class="text-2xl font-semibold text-[var(--text)]">解决方案</a>
+        <a href="./ai-coach.html" class="text-2xl font-semibold text-[var(--text)]">AI教练</a>
+        <a href="./about.html" class="text-2xl font-semibold text-[var(--text)]">关于我们</a>
+        <a href="./news.html" class="text-2xl font-semibold text-[var(--text)]">新闻</a>
+        <button onclick="openModal('modal-booking')" class="mt-4 h-12 px-8 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white font-semibold">预约体验</button>
+    </div>
+</nav>
+
+<main>
+    <!-- Hero -->
+    <section class="pt-[128px] pb-20 bg-white">
+        <div class="max-w-[1200px] mx-auto px-[5%]">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="w-full md:w-1/2 reveal">
+                    <div class="relative">
+                        <img src="./images/v3.1.png" alt="AI教练骨骼对比" class="w-full rounded-2xl shadow-xl" onerror="this.style.display='none'">
+                        <img src="./images/v3.2.png" alt="AI语音指导" class="w-[70%] rounded-2xl shadow-lg -mt-8 ml-auto relative z-10 border-4 border-white" onerror="this.style.display='none'">
+                    </div>
+                </div>
+                <div class="w-full md:w-1/2 reveal" style="transition-delay:0.1s">
+                    <h1 class="text-[32px] md:text-[48px] font-extrabold leading-[1.1] mb-4">WOO 雪时刻</h1>
+                    <p class="text-xl text-[var(--text-muted)] mb-8">你的随身AI滑雪教练</p>
+                    <a href="#demo-section" class="inline-flex h-11 px-8 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white text-sm font-semibold shadow-lg btn-primary items-center">立即体验</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 静态展示：核心流程 -->
+    <section class="bg-[var(--bg-secondary)] py-24">
+        <div class="max-w-[1200px] mx-auto px-[5%]">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-[24px] md:text-[40px] font-bold leading-[1.2]">三步获取专业分析</h2>
+            </div>
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-16">
+                <div class="bg-white rounded-2xl p-8 w-full md:w-[280px] text-center border border-[var(--border)] reveal">
+                    <div class="text-4xl mb-4">📤</div>
+                    <h3 class="text-lg font-semibold mb-2">上传视频</h3>
+                    <p class="text-sm text-[var(--text-muted)]">支持MP4/MOV，5-60秒，≥720p</p>
+                </div>
+                <div class="text-[var(--primary)] text-2xl hidden md:block">→</div>
+                <div class="text-[var(--primary)] text-2xl md:hidden">↓</div>
+                <div class="bg-white rounded-2xl p-8 w-full md:w-[280px] text-center border border-[var(--border)] reveal" style="transition-delay:0.1s">
+                    <div class="text-4xl mb-4">🤖</div>
+                    <h3 class="text-lg font-semibold mb-2">AI分析</h3>
+                    <p class="text-sm text-[var(--text-muted)]">Qwen3-VL多模态分析，45帧精准识别</p>
+                </div>
+                <div class="text-[var(--primary)] text-2xl hidden md:block">→</div>
+                <div class="text-[var(--primary)] text-2xl md:hidden">↓</div>
+                <div class="bg-white rounded-2xl p-8 w-full md:w-[280px] text-center border border-[var(--border)] reveal" style="transition-delay:0.2s">
+                    <div class="text-4xl mb-4">📊</div>
+                    <h3 class="text-lg font-semibold mb-2">获取报告</h3>
+                    <p class="text-sm text-[var(--text-muted)]">WOO评分+五维雷达+改进建议</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white rounded-2xl p-6 border border-[var(--border)] reveal">
+                    <div class="text-2xl mb-3">🎯</div>
+                    <h4 class="font-semibold mb-1">姿态识别</h4>
+                    <p class="text-sm text-[var(--text-muted)]">精准识别身体关节角度与重心分布</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border border-[var(--border)] reveal" style="transition-delay:0.05s">
+                    <div class="text-2xl mb-3">〰️</div>
+                    <h4 class="font-semibold mb-1">弯形分析</h4>
+                    <p class="text-sm text-[var(--text-muted)]">评估弯形对称性与流畅度</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border border-[var(--border)] reveal" style="transition-delay:0.1s">
+                    <div class="text-2xl mb-3">⚡</div>
+                    <h4 class="font-semibold mb-1">速度建议</h4>
+                    <p class="text-sm text-[var(--text-muted)]">结合弯形给出速度控制建议</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border border-[var(--border)] reveal" style="transition-delay:0.15s">
+                    <div class="text-2xl mb-3">📈</div>
+                    <h4 class="font-semibold mb-1">历史对比</h4>
+                    <p class="text-sm text-[var(--text-muted)]">追踪进步曲线，量化训练成果</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 交互Demo区 -->
+    <section id="demo-section" class="bg-white py-24">
+        <div class="max-w-[1000px] mx-auto px-[5%]">
+
+            <!-- 模块A：上传配置 -->
+            <div id="module-upload" class="reveal">
+                <div class="bg-white border border-[var(--border)] rounded-2xl p-8 shadow-sm mb-6">
+                    <h3 class="text-xl font-semibold mb-6 flex items-center gap-2"><span>📤</span> 视频上传</h3>
+                    <div class="text-center mb-4">
+                        <button onclick="enableQuickTest()" class="px-4 py-2 rounded-lg border border-[var(--primary)] text-[var(--primary)] text-sm font-medium hover:bg-[var(--primary)] hover:text-white transition-all">🎯 使用演示模式（跳过上传）</button>
+                    </div>
+                    <div class="upload-zone" id="uploadZone">
+                        <div class="text-5xl mb-4">🎿</div>
+                        <h4 class="text-lg font-medium mb-2">拖拽视频到此处，或点击选择文件</h4>
+                        <p class="text-sm text-[var(--text-muted)]">支持 MP4、MOV 格式，时长 5-60 秒，分辨率 ≥720p</p>
+                        <div class="text-xs text-[var(--text-muted)] mt-3">文件大小 ≤100MB · 需包含至少1个完整弯形</div>
+                    </div>
+                    <input type="file" id="fileInput" accept="video/mp4,video/mov,video/quicktime" style="display:none">
+                    <div id="filePreview" style="display:none;">
+                        <div class="file-preview">
+                            <span class="text-2xl">🎬</span>
+                            <div class="flex-1">
+                                <div class="font-medium text-sm" id="previewName">-</div>
+                                <div class="text-xs text-[var(--text-muted)]" id="previewSize">-</div>
+                            </div>
+                            <button class="remove-btn" onclick="removeFile()">移除</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-[var(--border)] rounded-2xl p-8 shadow-sm mb-6">
+                    <h3 class="text-xl font-semibold mb-6 flex items-center gap-2"><span>⚙️</span> 分析配置</h3>
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium mb-3">板种 <span class="text-[var(--danger)]">*</span></label>
+                        <div class="flex gap-3">
+                            <div class="radio-card" id="board-snowboard" onclick="selectBoard('snowboard')">
+                                <div class="text-2xl mb-2">🏂</div>
+                                <div class="font-semibold text-sm">单板</div>
+                            </div>
+                            <div class="radio-card" id="board-ski" onclick="selectBoard('ski')">
+                                <div class="text-2xl mb-2">⛷️</div>
+                                <div class="font-semibold text-sm">双板</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium mb-2">雪场</label>
+                        <select id="resortSelect" class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm bg-white">
+                            <option value="">请选择雪场（可选）</option>
+                            <optgroup label="崇礼"><option value="万龙">万龙滑雪场</option><option value="富龙">富龙滑雪场</option><option value="太舞">太舞滑雪场</option></optgroup>
+                            <optgroup label="吉林"><option value="北大湖">北大湖滑雪场</option><option value="松花湖">松花湖滑雪场</option></optgroup>
+                            <optgroup label="新疆"><option value="可可托海">可可托海滑雪场</option><option value="禾木">禾木滑雪场</option></optgroup>
+                            <optgroup label="北京"><option value="南山">南山滑雪场</option><option value="军都山">军都山滑雪场</option></optgroup>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium mb-2">备注 / 重点关注</label>
+                        <textarea id="userNote" class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm resize-y min-h-[80px]" placeholder="例如：这段视频想重点看换刃时机是否准确，或者后刃是否躲重心..."></textarea>
+                        <div class="text-xs text-[var(--text-muted)] mt-1">这些备注将传递给AI，帮助生成更精准的分析建议</div>
+                    </div>
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium mb-2">上传者姓名 <span class="text-[var(--danger)]">*</span></label>
+                        <input type="text" id="uploaderName" class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm" placeholder="用于内部记录和反馈追踪" oninput="checkFormValidity()">
+                    </div>
+                    <button id="uploadBtn" onclick="startUpload()" disabled class="h-11 px-8 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white text-sm font-semibold shadow-lg opacity-50 cursor-not-allowed">开始分析</button>
+                    <div class="validation-hint" id="validationHint">请完成必填项：上传视频、选择板种、填写姓名</div>
+                </div>
+            </div>
+
+            <!-- 模块B：分析进度 -->
+            <div id="module-analysis" style="display:none;">
+                <div class="bg-white border border-[var(--border)] rounded-2xl p-8 shadow-sm mb-6">
+                    <h3 class="text-xl font-semibold mb-6 flex items-center gap-2"><span>🤖</span> AI 分析中</h3>
+                    <div class="h-2 bg-[var(--bg-secondary)] rounded overflow-hidden mb-3">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="flex justify-between text-sm text-[var(--text-muted)] mb-4">
+                        <span id="progressText">准备中...</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div class="flex gap-2 mb-4">
+                        <div class="step" id="step1">📤 上传视频</div>
+                        <div class="step" id="step2">🎞️ 抽帧处理</div>
+                        <div class="step" id="step3">🧠 AI分析</div>
+                        <div class="step" id="step4">📊 生成报告</div>
+                    </div>
+                    <div id="analysisLog" class="mt-5 text-sm text-[#9CA3AF] font-mono h-[200px] overflow-y-auto bg-[var(--bg-secondary)] rounded-lg p-4">
+                        <div>&gt; 初始化分析任务...</div>
+                    </div>
+                </div>
+                <div id="analysisComplete" class="bg-white border border-[var(--border)] rounded-2xl p-8 shadow-sm text-center" style="display:none;">
+                    <div class="text-5xl mb-4">✅</div>
+                    <h3 class="text-xl font-bold mb-2">分析完成</h3>
+                    <p class="text-[var(--text-muted)] mb-6">WOO评分报告已生成，请查看详细分析结果</p>
+                    <button onclick="showReport()" class="h-11 px-8 rounded-full bg-[var(--success)] text-white text-sm font-semibold hover:opacity-90 transition-opacity">查看报告</button>
+                </div>
+            </div>
+
+            <!-- 模块C：报告卡片 -->
+            <div id="module-report" style="display:none;">
+                <div class="rounded-2xl p-6 mb-6 text-center" style="background: linear-gradient(135deg, rgba(125,45,190,0.08), rgba(150,230,255,0.04));">
+                    <div class="score-number" id="wooScore">-</div>
+                    <div class="rank-badge mt-3 mb-4" id="wooRank">-</div>
+                    <div class="flex justify-center gap-6 text-sm text-[#9CA3AF]">
+                        <span id="reportBoard">-</span>
+                        <span id="reportResort">-</span>
+                        <span id="reportDate">-</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <div class="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm mb-6">
+                            <h4 class="font-semibold mb-4 flex items-center gap-2"><span>🎬</span> 原视频</h4>
+                            <div class="bg-black rounded-xl overflow-hidden aspect-video flex items-center justify-center" id="videoContainer">
+                                <video id="reportVideo" controls class="w-full h-full object-contain"></video>
+                            </div>
+                        </div>
+                        <div class="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm">
+                            <h4 class="font-semibold mb-4 flex items-center gap-2"><span>🎯</span> 五维能力雷达图</h4>
+                            <div id="radarChart" style="width:100%;height:350px;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm mb-6">
+                            <h4 class="font-semibold mb-4 flex items-center gap-2"><span>📈</span> 五维得分详情</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3" id="dimensionsGrid"></div>
+                        </div>
+                        <div class="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm mb-6">
+                            <h4 class="font-semibold mb-4 flex items-center gap-2"><span>✨</span> 技术亮点</h4>
+                            <div id="highlightsList"></div>
+                        </div>
+                        <div class="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm">
+                            <h4 class="font-semibold mb-4 flex items-center gap-2"><span>🔧</span> 待改进问题（按严重程度排序）</h4>
+                            <div id="issuesList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-[var(--border)] rounded-2xl shadow-sm mb-6 overflow-hidden">
+                    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                        <span>🔍 技术详情（AI原始判断依据）</span>
+                        <span class="collapsible-arrow">▼</span>
+                    </div>
+                    <div class="collapsible-body">
+                        <div class="json-preview" id="rawJson"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-[var(--border)] rounded-2xl p-8 shadow-sm mb-6">
+                    <h4 class="font-semibold mb-6 flex items-center gap-2"><span>📝</span> 人工评估反馈（内部验证）</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="text-center">
+                            <label class="block text-sm text-[var(--text-muted)] mb-2">AI准确度评分</label>
+                            <input type="range" id="aiAccuracy" min="0" max="10" value="8" class="w-full mb-1" oninput="updateSliderValue(this, 'aiAccuracyVal')">
+                            <div class="text-xl font-bold text-[var(--primary)]" id="aiAccuracyVal">8</div>
+                        </div>
+                        <div class="text-center">
+                            <label class="block text-sm text-[var(--text-muted)] mb-2">建议可用性评分</label>
+                            <input type="range" id="suggestionUsability" min="0" max="10" value="7" class="w-full mb-1" oninput="updateSliderValue(this, 'suggestionUsabilityVal')">
+                            <div class="text-xl font-bold text-[var(--primary)]" id="suggestionUsabilityVal">7</div>
+                        </div>
+                        <div class="text-center">
+                            <label class="block text-sm text-[var(--text-muted)] mb-2">人工WOO评分</label>
+                            <input type="range" id="humanWoo" min="0" max="200" value="120" class="w-full mb-1" oninput="updateSliderValue(this, 'humanWooVal')">
+                            <div class="text-xl font-bold text-[var(--primary)]" id="humanWooVal">120</div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">偏差原因 / 备注</label>
+                        <textarea id="feedbackNote" class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm resize-y min-h-[80px]" placeholder="例如：AI对后刃判断偏严，实际动作比评分显示的要好..."></textarea>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="submitFeedback()" class="h-10 px-6 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white text-sm font-semibold btn-primary">提交反馈</button>
+                        <button onclick="resetFeedback()" class="h-10 px-6 rounded-full border border-[var(--border)] text-[var(--text-muted)] text-sm font-medium hover:border-[var(--primary)] hover:text-[var(--primary)] transition-all">重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模块D：历史记录 -->
+            <div id="module-history" class="mt-12 reveal">
+                <div class="bg-white border border-[var(--border)] rounded-2xl p-8 shadow-sm">
+                    <h3 class="text-xl font-semibold mb-6 flex items-center gap-2"><span>📁</span> 分析历史</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-[var(--border)]">
+                                    <th class="text-left py-3 px-2 text-[#9CA3AF] font-medium">ID</th>
+                                    <th class="text-left py-3 px-2 text-[#9CA3AF] font-medium">上传者</th>
+                                    <th class="text-left py-3 px-2 text-[#9CA3AF] font-medium">板种</th>
+                                    <th class="text-left py-3 px-2 text-[#9CA3AF] font-medium">雪场</th>
+                                    <th class="text-left py-3 px-2 text-[#9CA3AF] font-medium">WOO评分</th>
+                                    <th class="text-left py-3 px-2 text-[#9CA3AF] font-medium">等级</th>
+                                    <th class="text-left py-3 px-2 text-[#9CA3AF] font-medium">状态</th>
+                                    <th class="text-left py-3 px-2 text-[#9CA3AF] font-medium">时间</th>
+                                    <th class="text-left py-3 px-2 text-[#9CA3AF] font-medium">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyBody">
+                                <tr><td colspan="9" class="text-center py-8 text-[var(--text-muted)]">暂无记录</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="historyEmpty" class="empty-state" style="display:none;">
+                        <div class="text-5xl mb-4">📁</div>
+                        <div class="text-lg font-medium mb-2">暂无记录</div>
+                        <button onclick="resetToUpload()" class="mt-4 h-10 px-6 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white text-sm font-semibold btn-primary">去上传视频</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</main>
+
+<footer class="bg-[#1A1A2E] text-white">
+    <div class="bg-[#0F0F1A] h-14 flex items-center justify-center text-sm text-gray-400">
+        <span>WOOVERSE 正在开放融资</span><span class="mx-2">|</span>
+        <a href="./investors.html" class="text-[var(--secondary)] hover:underline">投资者请访问 /investors →</a>
+    </div>
+    <div class="max-w-[1200px] mx-auto px-[5%] py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-8">
+        <div>
+            <img src="./images/logo.png" alt="WOOVERSE" class="h-8 w-auto brightness-0 invert mb-4">
+            <p class="text-sm text-gray-400 leading-relaxed max-w-[280px]">WOOVERSE悟境科技，专注智能滑雪装备与雪场数字化解决方案，让每一次滑雪更安全、更专业、更可分享。</p>
+        </div>
+        <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">产品</h4>
+            <ul class="space-y-2 text-sm text-gray-400">
+                <li><a href="./flow-s.html" class="hover:text-[var(--secondary)] transition-colors">Flow S</a></li>
+                <li><a href="./ai-coach.html" class="hover:text-[var(--secondary)] transition-colors">AI教练</a></li>
+                <li><a href="#" class="hover:text-[var(--secondary)] transition-colors">配件</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">合作</h4>
+            <ul class="space-y-2 text-sm text-gray-400">
+                <li><a href="./solution.html" class="hover:text-[var(--secondary)] transition-colors">雪场合作</a></li>
+                <li><a href="#" onclick="openModal('modal-coach')" class="hover:text-[var(--secondary)] transition-colors">教练入驻</a></li>
+                <li><a href="#" onclick="openModal('modal-kol')" class="hover:text-[var(--secondary)] transition-colors">KOL合作</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">公司</h4>
+            <ul class="space-y-2 text-sm text-gray-400">
+                <li><a href="./about.html" class="hover:text-[var(--secondary)] transition-colors">关于我们</a></li>
+                <li><a href="./news.html" class="hover:text-[var(--secondary)] transition-colors">新闻动态</a></li>
+                <li><a href="#" class="hover:text-[var(--secondary)] transition-colors">加入我们</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">联系</h4>
+            <ul class="space-y-2 text-sm text-gray-400">
+                <li><a href="./solution.html" class="hover:text-[var(--secondary)] transition-colors">商务咨询</a></li>
+                <li><a href="./investors.html" class="hover:text-[var(--secondary)] transition-colors">投资者关系</a></li>
+                <li><a href="#" class="hover:text-[var(--secondary)] transition-colors">客服支持</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="border-t border-white/10 max-w-[1200px] mx-auto px-[5%] py-6 flex flex-col md:flex-row justify-between items-center text-xs text-white/40">
+        <span>© 2026 WOOVERSE Technology. All rights reserved.</span>
+        <div class="flex gap-4 mt-2 md:mt-0"><a href="#" class="hover:text-white/60">隐私政策</a><a href="#" class="hover:text-white/60">服务条款</a></div>
+    </div>
+</footer>
+
+<!-- 弹窗：预约体验 -->
+<div id="modal-booking" class="modal-overlay fixed inset-0 z-[60] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div class="modal-container bg-white rounded-[20px] p-8 md:p-10 max-w-[480px] w-full relative max-h-[90vh] overflow-y-auto">
+        <button onclick="closeModal('modal-booking')" class="absolute top-4 right-4 text-2xl text-[var(--text-muted)] hover:text-[var(--text)]">×</button>
+        <div id="booking-form-content">
+            <h3 class="text-2xl font-bold mb-2">预约体验</h3>
+            <p class="text-sm text-[var(--text-muted)] mb-6">成为 Flow S 首批体验官</p>
+            <form onsubmit="handleBookingSubmit(event)">
+                <div class="mb-4"><label class="block text-sm font-medium mb-2">姓名 <span class="text-[var(--danger)]">*</span></label><input type="text" id="booking-name" required class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm" placeholder="请输入您的姓名"></div>
+                <div class="mb-4"><label class="block text-sm font-medium mb-2">手机号 <span class="text-[var(--danger)]">*</span></label><input type="tel" id="booking-phone" required pattern="^1[3-9]\d{9}$" class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm" placeholder="请输入大陆手机号"></div>
+                <div class="mb-4"><label class="block text-sm font-medium mb-2">常用雪场</label><input type="text" id="booking-resort" class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm" placeholder="例如：崇礼万龙"></div>
+                <div class="mb-6"><label class="block text-sm font-medium mb-2">滑雪水平</label><select id="booking-level" class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm bg-white"><option value="初学者">初学者</option><option value="中级">中级</option><option value="高级">高级</option><option value="专业">专业</option></select></div>
+                <button type="submit" class="w-full h-12 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white font-semibold btn-primary">提交预约</button>
+            </form>
+        </div>
+        <div id="booking-success" class="hidden text-center py-8"><div class="success-check">✓</div><h3 class="text-xl font-bold mb-2">预约成功</h3><p class="text-[var(--text-muted)]">我们会尽快联系您</p></div>
+    </div>
+</div>
+<div id="modal-coach" class="modal-overlay fixed inset-0 z-[60] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4"><div class="modal-container bg-white rounded-[20px] p-8 max-w-[480px] w-full relative"><button onclick="closeModal('modal-coach')" class="absolute top-4 right-4 text-2xl text-[var(--text-muted)]">×</button><h3 class="text-2xl font-bold mb-2">教练入驻</h3><p class="text-sm text-[var(--text-muted)]">功能即将开放，敬请期待</p></div></div>
+<div id="modal-kol" class="modal-overlay fixed inset-0 z-[60] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4"><div class="modal-container bg-white rounded-[20px] p-8 max-w-[480px] w-full relative"><button onclick="closeModal('modal-kol')" class="absolute top-4 right-4 text-2xl text-[var(--text-muted)]">×</button><h3 class="text-2xl font-bold mb-2">KOL合作</h3><p class="text-sm text-[var(--text-muted)]">功能即将开放，敬请期待</p></div></div>
+
+<script>
+/* ===== 官网通用交互 ===== */
+const navbar=document.getElementById('navbar');
+window.addEventListener('scroll',()=>{window.scrollY>40?navbar.classList.add('scrolled'):navbar.classList.remove('scrolled');});
+document.getElementById('menu-toggle').addEventListener('click',()=>document.getElementById('mobile-menu').classList.remove('translate-x-full'));
+document.getElementById('menu-close').addEventListener('click',()=>document.getElementById('mobile-menu').classList.add('translate-x-full'));
+function openModal(id){const m=document.getElementById(id);m.classList.remove('hidden');requestAnimationFrame(()=>m.classList.add('active','flex'));document.body.style.overflow='hidden';}
+function closeModal(id){const m=document.getElementById(id);m.classList.remove('active');setTimeout(()=>{m.classList.add('hidden');m.classList.remove('flex');},300);document.body.style.overflow='';}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModal(o.id);}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-overlay.active').forEach(m=>closeModal(m.id));});
+function handleBookingSubmit(e){e.preventDefault();const p=document.getElementById('booking-phone').value;if(!/^1[3-9]\d{9}$/.test(p)){alert('请输入正确的大陆手机号');return;}document.getElementById('booking-form-content').classList.add('hidden');document.getElementById('booking-success').classList.remove('hidden');setTimeout(()=>closeModal('modal-booking'),3000);}
+const ro=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');ro.unobserve(e.target);}});},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+
+/* ===== AI教练完整逻辑 ===== */
+let currentFile=null;
+let selectedBoard=null;
+let currentAnalysis=null;
+let analysisHistory=JSON.parse(localStorage.getItem('wooverse_ai_history')||'[]');
+let radarChartInstance=null;
+let isQuickTest=false;
+
+const uploadZone=document.getElementById('uploadZone');
+const fileInput=document.getElementById('fileInput');
+
+uploadZone.addEventListener('click',function(e){if(!isQuickTest)fileInput.click();});
+uploadZone.addEventListener('dragover',(e)=>{e.preventDefault();e.stopPropagation();uploadZone.classList.add('dragover');});
+uploadZone.addEventListener('dragleave',(e)=>{e.preventDefault();e.stopPropagation();uploadZone.classList.remove('dragover');});
+uploadZone.addEventListener('drop',(e)=>{e.preventDefault();e.stopPropagation();uploadZone.classList.remove('dragover');if(e.dataTransfer.files.length>0)handleFile(e.dataTransfer.files[0]);});
+fileInput.addEventListener('change',function(e){if(e.target.files.length>0)handleFile(e.target.files[0]);});
+
+function handleFile(file){
+    if(!file.type.startsWith('video/')){showToast('请选择视频文件 (MP4/MOV)','error');return;}
+    if(file.size>100*1024*1024){showToast('文件大小超过100MB限制','error');return;}
+    currentFile=file;isQuickTest=false;
+    document.getElementById('previewName').textContent=file.name;
+    document.getElementById('previewSize').textContent=formatFileSize(file.size);
+    document.getElementById('filePreview').style.display='block';
+    document.getElementById('uploadZone').style.display='none';
+    checkFormValidity();
+    showToast('视频已选择: '+file.name,'success');
+}
+function removeFile(){
+    currentFile=null;isQuickTest=false;fileInput.value='';
+    document.getElementById('filePreview').style.display='none';
+    document.getElementById('uploadZone').style.display='block';
+    document.getElementById('uploadZone').innerHTML='<div class="text-5xl mb-4">🎿</div><h4 class="text-lg font-medium mb-2">拖拽视频到此处，或点击选择文件</h4><p class="text-sm text-[var(--text-muted)]">支持 MP4、MOV 格式，时长 5-60 秒，分辨率 ≥720p</p><div class="text-xs text-[var(--text-muted)] mt-3">文件大小 ≤100MB · 需包含至少1个完整弯形</div>';
+    checkFormValidity();
+}
+function formatFileSize(bytes){if(bytes===0)return'0 B';const k=1024;const sizes=['B','KB','MB','GB'];const i=Math.floor(Math.log(bytes)/Math.log(k));return parseFloat((bytes/Math.pow(k,i)).toFixed(2))+' '+sizes[i];}
+
+function enableQuickTest(){
+    isQuickTest=true;currentFile=null;
+    document.getElementById('filePreview').style.display='none';
+    document.getElementById('uploadZone').style.display='block';
+    document.getElementById('uploadZone').innerHTML='<div class="text-5xl mb-4">🎯</div><h4 class="text-lg font-medium mb-2">演示模式已启用</h4><p class="text-sm text-[var(--text-muted)]">将使用模拟数据生成WOO评分报告，无需上传真实视频</p><div class="text-xs text-[var(--text-muted)] mt-3">适合快速体验功能和UI效果</div>';
+    checkFormValidity();
+    showToast('演示模式已启用，可直接点击开始分析','info');
+}
+
+function selectBoard(board){
+    selectedBoard=board;
+    document.querySelectorAll('.radio-card').forEach(c=>c.classList.remove('selected'));
+    document.getElementById('board-'+board).classList.add('selected');
+    checkFormValidity();
+}
+
+function checkFormValidity(){
+    const name=document.getElementById('uploaderName').value.trim();
+    const hasFile=currentFile!==null||isQuickTest;
+    const valid=hasFile&&selectedBoard&&name;
+    const btn=document.getElementById('uploadBtn');
+    const hint=document.getElementById('validationHint');
+    if(valid){btn.disabled=false;btn.classList.remove('opacity-50','cursor-not-allowed');hint.classList.remove('show');}
+    else{btn.disabled=true;btn.classList.add('opacity-50','cursor-not-allowed');hint.classList.add('show');}
+}
+
+async function startUpload(){
+    if(!selectedBoard){showToast('请选择板种','error');return;}
+    const name=document.getElementById('uploaderName').value.trim();
+    if(!name){showToast('请填写上传者姓名','error');return;}
+    if(!currentFile&&!isQuickTest){showToast('请先上传视频或启用演示模式','error');return;}
+
+    document.getElementById('module-upload').style.display='none';
+    document.getElementById('module-analysis').style.display='block';
+    document.getElementById('analysisComplete').style.display='none';
+    const log=document.getElementById('analysisLog');
+    log.innerHTML='<div>&gt; 初始化分析任务...</div>';
+    for(let i=1;i<=4;i++)document.getElementById('step'+i).className='step';
+
+    updateStep(0,'active');
+    if(isQuickTest)addLog('&gt; 演示模式：跳过视频上传，使用模拟数据');
+    else{addLog('&gt; 开始上传视频: '+currentFile.name);addLog('&gt; 文件大小: '+formatFileSize(currentFile.size));}
+    await simulateProgress(0,15,600);
+    addLog('&gt; ✅ '+(isQuickTest?'演示数据准备完成':'视频上传完成'));
+    updateStep(0,'completed');
+
+    updateStep(1,'active');
+    addLog('&gt; 启动 FFmpeg 抽帧处理 (5fps, JPEG质量85%)...');
+    await simulateProgress(15,35,1000);
+    addLog('&gt; ✅ 抽帧完成，共提取 45 帧');
+    addLog('&gt; 图片尺寸: 1080px最长边，准备送入AI...');
+    updateStep(1,'completed');
+
+    updateStep(2,'active');
+    addLog('&gt; 调用 Qwen3-VL API 进行多模态分析...');
+    addLog('&gt; 板种: '+(selectedBoard==='snowboard'?'单板':'双板'));
+    addLog('&gt; 构建专业Prompt，扮演PSIA-AASI认证教练...');
+    await simulateProgress(35,80,2000);
+    addLog('&gt; ✅ AI分析完成，解析JSON响应...');
+    updateStep(2,'completed');
+
+    updateStep(3,'active');
+    addLog('&gt; 生成WOO评分报告，渲染雷达图...');
+    await simulateProgress(80,100,600);
+    addLog('&gt; ✅ 报告生成完毕！');
+    updateStep(3,'completed');
+
+    currentAnalysis=generateMockResult();
+    analysisHistory.unshift({
+        id:currentAnalysis.id,uploader:name,
+        board:selectedBoard==='snowboard'?'单板':'双板',
+        resort:document.getElementById('resortSelect').value||'-',
+        score:currentAnalysis.wooScore,rank:currentAnalysis.rank,
+        status:'completed',time:new Date().toLocaleString('zh-CN'),
+        data:currentAnalysis
+    });
+    localStorage.setItem('wooverse_ai_history',JSON.stringify(analysisHistory));
+    document.getElementById('analysisComplete').style.display='block';
+    showToast('分析完成！','success');
+    renderHistory();
+}
+
+function updateStep(index,state){
+    for(let i=0;i<4;i++){
+        const el=document.getElementById('step'+(i+1));
+        el.className='step';
+        if(i<index)el.classList.add('completed');
+        if(i===index)el.classList.add(state);
+    }
+}
+function addLog(msg){
+    const log=document.getElementById('analysisLog');
+    const div=document.createElement('div');div.textContent=msg;
+    log.appendChild(div);log.scrollTop=log.scrollHeight;
+}
+async function simulateProgress(from,to,duration){
+    const fill=document.getElementById('progressFill');
+    const text=document.getElementById('progressText');
+    const percent=document.getElementById('progressPercent');
+    const start=Date.now();
+    return new Promise(resolve=>{
+        const interval=setInterval(()=>{
+            const elapsed=Date.now()-start;
+            const progress=Math.min(elapsed/duration,1);
+            const current=from+(to-from)*progress;
+            fill.style.width=current+'%';
+            percent.textContent=Math.round(current)+'%';
+            if(current<20)text.textContent='准备中...';
+            else if(current<40)text.textContent='视频预处理...';
+            else if(current<80)text.textContent='AI分析中（约需15-30秒）...';
+            else text.textContent='生成报告...';
+            if(progress>=1){clearInterval(interval);resolve();}
+        },50);
+    });
+}
+
+function generateMockResult(){
+    const isSnowboard=selectedBoard==='snowboard';
+    const dims={balance:Math.floor(Math.random()*30)+55,pressure:Math.floor(Math.random()*30)+50,rotary:Math.floor(Math.random()*30)+45,edging:Math.floor(Math.random()*30)+50,alignment:Math.floor(Math.random()*30)+55};
+    const avg=(dims.balance+dims.pressure+dims.rotary+dims.edging+dims.alignment)/5;
+    const wooScore=Math.round(100+avg*2);
+    let rank,rankClass,rankColor;
+    if(wooScore<=80){rank='青铜';rankClass='rank-bronze';rankColor='#B87333';}
+    else if(wooScore<=110){rank='白银';rankClass='rank-silver';rankColor='#A0A0A0';}
+    else if(wooScore<=140){rank='黄金';rankClass='rank-gold';rankColor='#D4AF37';}
+    else if(wooScore<=165){rank='铂金';rankClass='rank-platinum';rankColor='#E5E4E2';}
+    else{rank='钻石';rankClass='rank-diamond';rankColor='#B9F2FF';}
+    const issues=generateIssues(isSnowboard,dims);
+    const highlights=generateHighlights(dims);
+    return{
+        id:'WOO'+Date.now().toString(36).toUpperCase(),
+        wooScore,rank,rankClass,rankColor,dimensions:dims,issues,highlights,
+        boardType:isSnowboard?'单板':'双板',
+        resort:document.getElementById('resortSelect').value||'未指定',
+        date:new Date().toLocaleString('zh-CN'),
+        rawJson:JSON.stringify({
+            model:'Qwen3-VL',prompt_version:'1.0',frames_analyzed:45,
+            analysis_duration_ms:28400,dimensions:dims,confidence:0.82,
+            board_type:isSnowboard?'snowboard':'ski',
+            user_note:document.getElementById('userNote').value||'无'
+        },null,2)
+    };
+}
+function generateIssues(isSnowboard,dims){
+    const issuePool=isSnowboard?[
+        {name:'后刃躲重心',severity:'critical',desc:'后刃滑行时重心过度后移，导致雪板失控打滑',advice:'练习静态后刃推坡，感受重心居中，膝盖弯曲吸收震动'},
+        {name:'开肩严重',severity:'high',desc:'上半身过度打开，与雪板方向不一致，影响换刃流畅度',advice:'练习双手抱胸前滑行，强制上身与板头方向一致'},
+        {name:'后脚扫雪',severity:'high',desc:'后脚主动踢雪减速，说明重心分配不均',advice:'练习单脚滑行，增强后脚控制力和重心感知'},
+        {name:'入刃犹豫',severity:'medium',desc:'换刃时入刃动作不够果断，弯形不完整',advice:'在缓坡练习快速换刃，强调"翻腕-入刃-施压"一气呵成'},
+        {name:'视线固定',severity:'medium',desc:'视线未提前看向出弯方向，影响身体预转',advice:'练习"看哪滑哪"，入弯前3秒锁定出弯点'},
+        {name:'膝盖内扣',severity:'low',desc:'前刃时双膝内扣，长期可能导致膝关节损伤',advice:'练习前刃推坡，保持膝盖与脚尖方向一致'}
+    ]:[
+        {name:'A腿支撑',severity:'critical',desc:'内腿承重过多，外腿未有效支撑，弯形崩塌',advice:'练习外腿单脚滑行，建立外侧支撑意识'},
+        {name:'上身带转',severity:'high',desc:'用上身旋转代替下肢引导，效率低且不稳定',advice:'练习双手扶髋滑行，强制下肢主导转向'},
+        {name:'重心落后',severity:'high',desc:'弯中重心偏后，导致板尾打滑、弯形不圆',advice:'练习向前送重心，感受脚掌前部压力'},
+        {name:'双板不平行',severity:'medium',desc:'内板滞后或外板超前，影响立刃一致性',advice:'练习横滑降，保持双板绝对平行'},
+        {name:'入弯过早施压',severity:'medium',desc:'弯开始即最大压力，导致弯形前半段过急',advice:'练习"入弯-弯中-出弯"三段式压力控制'},
+        {name:'手臂张开',severity:'low',desc:'滑行中手臂过度外展，破坏身体平衡',advice:'练习手持雪杖横置胸前，控制手臂位置'}
+    ];
+    const numIssues=Math.floor(Math.random()*3)+2;
+    const selected=[];
+    for(let i=0;i<numIssues&&i<issuePool.length;i++)selected.push(issuePool[i]);
+    return selected.map((issue,idx)=>({...issue,time:(idx*2+3)+'s - '+(idx*2+5)+'s'}));
+}
+function generateHighlights(dims){
+    const dimNames={balance:{name:'平衡控制',icon:'⚖️'},pressure:{name:'施压控制',icon:'⬇️'},rotary:{name:'旋转控制',icon:'🔄'},edging:{name:'立刃技术',icon:'🔺'},alignment:{name:'身体姿态',icon:'🧍'}};
+    const sorted=Object.entries(dims).sort((a,b)=>b[1]-a[1]);
+    return sorted.slice(0,2).map(([key,score])=>({dimension:dimNames[key].name,icon:dimNames[key].icon,score,desc:getHighlightDesc(key,score)}));
+}
+function getHighlightDesc(dim,score){
+    const descs={balance:score>75?'重心控制稳健，前后左右分配合理，过渡流畅':'基础平衡良好，滑行中能保持稳定站姿',pressure:score>75?'施压时机精准，弯中压力保持出色':'压力控制基本合格，入弯出弯节奏清晰',rotary:score>75?'上下身分离优秀，转髋时机恰到好处':'旋转引导意识良好，能完成基本转向',edging:score>75?'立刃果断，刃角控制精细，抓雪感强':'刃线基本干净，入刃动作明确',alignment:score>75?'关节排列近乎完美，功能性姿态优秀':'身体姿态规范，脊柱保持中立位'};
+    return descs[dim];
+}
+
+function showReport(){
+    document.getElementById('module-analysis').style.display='none';
+    document.getElementById('module-report').style.display='block';
+    renderReport();
+    document.getElementById('module-report').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderReport(){
+    if(!currentAnalysis)return;
+    const r=currentAnalysis;
+    const scoreEl=document.getElementById('wooScore');
+    scoreEl.textContent=r.wooScore;
+    scoreEl.style.color=r.rankColor;
+    const rankEl=document.getElementById('wooRank');
+    rankEl.textContent=r.rank;
+    rankEl.style.background=r.rankColor+'33';
+    rankEl.style.color=r.rankColor;
+
+    document.getElementById('reportBoard').textContent='🏂 '+r.boardType;
+    document.getElementById('reportResort').textContent='🏔️ '+r.resort;
+    document.getElementById('reportDate').textContent='📅 '+r.date;
+
+    const container=document.getElementById('videoContainer');
+    if(currentFile&&!isQuickTest){
+        container.innerHTML='<video id="reportVideo" controls class="w-full h-full object-contain"></video>';
+        const video=document.getElementById('reportVideo');
+        video.src=URL.createObjectURL(currentFile);video.load();
+    }else{
+        container.innerHTML='<div class="text-center p-8"><div class="text-5xl mb-4">🎿</div><div class="text-white">演示模式：无视频文件</div><div class="text-white/60 text-sm mt-2">实际使用时将显示上传的滑雪视频</div></div>';
+    }
+
+    setTimeout(()=>renderRadarChart(r.dimensions),100);
+
+    const dimNames={balance:{name:'平衡',color:'#22c55e'},pressure:{name:'施压',color:'#3b82f6'},rotary:{name:'旋转',color:'#f59e0b'},edging:{name:'立刃',color:'#ef4444'},alignment:{name:'姿态',color:'#8b5cf6'}};
+    const grid=document.getElementById('dimensionsGrid');
+    grid.innerHTML=Object.entries(r.dimensions).map(([key,score])=>`
+        <div class="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border)]">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-semibold">${dimNames[key].name}</span>
+                <span class="text-lg font-bold" style="color:${dimNames[key].color}">${score}</span>
+            </div>
+            <div class="h-1.5 bg-[var(--border)] rounded overflow-hidden">
+                <div class="dim-bar-fill" style="width:${score}%;background:${dimNames[key].color}"></div>
+            </div>
+        </div>
+    `).join('');
+
+    document.getElementById('highlightsList').innerHTML=r.highlights.map(h=>`
+        <div class="highlight-item">
+            <div class="font-semibold text-[var(--success)] mb-1 flex items-center gap-2">${h.icon} ${h.dimension} · ${h.score}分</div>
+            <div class="text-sm text-[var(--text-muted)]">${h.desc}</div>
+        </div>
+    `).join('');
+
+    document.getElementById('issuesList').innerHTML=r.issues.map(issue=>`
+        <div class="issue-item issue-${issue.severity}">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-semibold">${issue.name}</span>
+                <span class="text-xs px-2 py-0.5 rounded font-semibold uppercase severity-${issue.severity}">${issue.severity}</span>
+            </div>
+            <div class="text-xs text-[#9CA3AF] mb-2">⏱️ 发生时间: ${issue.time}</div>
+            <div class="text-sm text-[var(--text-muted)] mb-3">${issue.desc}</div>
+            <div class="text-sm bg-[rgba(125,45,190,0.08)] rounded-lg p-3">💡 ${issue.advice}</div>
+        </div>
+    `).join('');
+
+    document.getElementById('rawJson').textContent=r.rawJson;
+}
+
+function renderRadarChart(dims){
+    const chartDom=document.getElementById('radarChart');
+    if(radarChartInstance)radarChartInstance.dispose();
+    radarChartInstance=echarts.init(chartDom);
+    const option={
+        color:['#7D2DBE'],
+        radar:{
+            indicator:[
+                {name:'平衡\nBalance',max:100},{name:'施压\nPressure',max:100},
+                {name:'旋转\nRotary',max:100},{name:'立刃\nEdging',max:100},{name:'姿态\nAlignment',max:100}
+            ],
+            shape:'polygon',splitNumber:4,
+            axisName:{color:'#9CA3AF',fontSize:11},
+            splitLine:{lineStyle:{color:'rgba(148,163,184,0.2)'}},
+            splitArea:{areaStyle:{color:['rgba(125,45,190,0.02)','rgba(125,45,190,0.05)']}},
+            axisLine:{lineStyle:{color:'rgba(148,163,184,0.3)'}}
+        },
+        series:[{
+            type:'radar',
+            data:[{
+                value:[dims.balance,dims.pressure,dims.rotary,dims.edging,dims.alignment],
+                name:'WOO评分',
+                areaStyle:{color:'rgba(125,45,190,0.2)'},
+                lineStyle:{color:'#7D2DBE',width:2},
+                itemStyle:{color:'#7D2DBE',borderWidth:2}
+            }]
+        }]
+    };
+    radarChartInstance.setOption(option);
+}
+
+function toggleCollapsible(header){
+    header.classList.toggle('open');
+    header.nextElementSibling.classList.toggle('open');
+}
+
+function updateSliderValue(slider,displayId){
+    document.getElementById(displayId).textContent=slider.value;
+}
+
+function submitFeedback(){
+    const feedback={
+        resultId:currentAnalysis.id,
+        aiAccuracy:document.getElementById('aiAccuracy').value,
+        suggestionUsability:document.getElementById('suggestionUsability').value,
+        humanWoo:document.getElementById('humanWoo').value,
+        note:document.getElementById('feedbackNote').value,
+        time:new Date().toLocaleString('zh-CN')
+    };
+    const feedbacks=JSON.parse(localStorage.getItem('wooverse_ai_feedbacks')||'[]');
+    feedbacks.push(feedback);
+    localStorage.setItem('wooverse_ai_feedbacks',JSON.stringify(feedbacks));
+    showToast('反馈已提交，感谢参与内部验证！','success');
+    resetFeedback();
+}
+
+function resetFeedback(){
+    document.getElementById('aiAccuracy').value=8;document.getElementById('aiAccuracyVal').textContent=8;
+    document.getElementById('suggestionUsability').value=7;document.getElementById('suggestionUsabilityVal').textContent=7;
+    document.getElementById('humanWoo').value=120;document.getElementById('humanWooVal').textContent=120;
+    document.getElementById('feedbackNote').value='';
+}
+
+function renderHistory(){
+    const tbody=document.getElementById('historyBody');
+    const emptyDiv=document.getElementById('historyEmpty');
+    if(analysisHistory.length===0){
+        tbody.innerHTML='';
+        emptyDiv.style.display='block';
+        return;
+    }
+    emptyDiv.style.display='none';
+    tbody.innerHTML=analysisHistory.map(item=>`
+        <tr class="border-b border-[var(--border)] hover:bg-[var(--bg-secondary)] transition-colors">
+            <td class="py-3 px-2 text-xs">${item.id}</td>
+            <td class="py-3 px-2 text-xs">${item.uploader}</td>
+            <td class="py-3 px-2 text-xs">${item.board}</td>
+            <td class="py-3 px-2 text-xs">${item.resort}</td>
+            <td class="py-3 px-2 font-bold">${item.score}</td>
+            <td class="py-3 px-2"><span class="text-xs px-2 py-0.5 rounded-full font-semibold" style="background:${getRankBg(item.rank)};color:${getRankColor(item.rank)}">${item.rank}</span></td>
+            <td class="py-3 px-2"><span class="text-xs px-2 py-0.5 rounded-full font-semibold bg-[rgba(34,197,94,0.1)] text-[var(--success)]">已完成</span></td>
+            <td class="py-3 px-2 text-xs text-[var(--text-muted)]">${item.time}</td>
+            <td class="py-3 px-2"><button class="action-btn" onclick="loadHistoryItem('${item.id}')">查看</button></td>
+        </tr>
+    `).join('');
+}
+
+function getRankColor(rank){
+    const colors={'青铜':'#B87333','白银':'#A0A0A0','黄金':'#D4AF37','铂金':'#E5E4E2','钻石':'#B9F2FF'};
+    return colors[rank]||'#1A1A2E';
+}
+function getRankBg(rank){
+    const bgs={'青铜':'rgba(184,115,51,0.1)','白银':'rgba(160,160,160,0.1)','黄金':'rgba(212,175,55,0.1)','铂金':'rgba(229,228,226,0.15)','钻石':'rgba(185,242,255,0.15)'};
+    return bgs[rank]||'rgba(0,0,0,0.05)';
+}
+
+function loadHistoryItem(id){
+    const item=analysisHistory.find(h=>h.id===id);
+    if(item){currentAnalysis=item.data;document.getElementById('module-upload').style.display='none';document.getElementById('module-analysis').style.display='none';document.getElementById('module-report').style.display='block';renderReport();document.getElementById('module-report').scrollIntoView({behavior:'smooth'});}
+}
+
+function resetToUpload(){
+    document.getElementById('module-report').style.display='none';
+    document.getElementById('module-analysis').style.display='none';
+    document.getElementById('module-upload').style.display='block';
+    document.getElementById('module-upload').scrollIntoView({behavior:'smooth'});
+}
+
+function showToast(message,type){
+    const existing=document.querySelector('.toast');
+    if(existing)existing.remove();
+    const toast=document.createElement('div');
+    toast.className='toast '+type;toast.textContent=message;
+    document.body.appendChild(toast);
+    setTimeout(()=>{toast.style.animation='slideIn 0.3s ease reverse';setTimeout(()=>toast.remove(),300);},3000);
+}
+
+window.addEventListener('resize',()=>{if(radarChartInstance)radarChartInstance.resize();});
+if(analysisHistory.length>0){currentAnalysis=analysisHistory[0].data;renderHistory();}
+</script>
+</body>
+</html>

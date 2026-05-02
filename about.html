@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="关于 WOOVERSE 悟境科技 —— 用AI与硬件重新定义滑雪体验。">
+    <title>关于我们 | WOOVERSE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --primary: #7D2DBE; --primary-light: #9B4DDB; --primary-dark: #5A1D8F; --secondary: #96E6FF; --secondary-deep: #5BC8E8; --text: #1A1A2E; --text-muted: #4B5563; --bg: #FFFFFF; --bg-secondary: #F5F3FA; --border: #E5E5EA; --danger: #ef4444; --font-sans: "Helvetica Neue", Helvetica, Arial, "Microsoft YaHei", "PingFang SC", sans-serif; }
+        body { font-family: var(--font-sans); color: var(--text); }
+        #navbar.scrolled { background: rgba(255,255,255,0.92); backdrop-filter: blur(24px); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 0.9s cubic-bezier(0.16,1,0.3,1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .btn-primary { transition: all 0.3s ease; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(125,45,190,0.3); }
+        .modal-overlay { opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.active { opacity: 1; }
+        .modal-container { transform: scale(0.95) translateY(20px); transition: all 0.3s cubic-bezier(0.16,1,0.3,1); }
+        .modal-overlay.active .modal-container { transform: scale(1) translateY(0); }
+        .timeline-item { position: relative; padding-left: 32px; border-left: 2px solid var(--border); padding-bottom: 32px; }
+        .timeline-item:last-child { border-left: 2px solid transparent; padding-bottom: 0; }
+        .timeline-dot { position: absolute; left: -9px; top: 0; width: 16px; height: 16px; border-radius: 50%; background: var(--primary); border: 3px solid white; box-shadow: 0 0 0 3px var(--primary); }
+        .success-check { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; margin: 0 auto 16px; }
+    </style>
+</head>
+<body class="antialiased">
+
+<nav id="navbar" class="fixed top-0 w-full h-[72px] z-50 transition-all duration-400">
+    <div class="max-w-[1200px] mx-auto h-full flex items-center justify-between px-[5%]">
+        <a href="./index.html" class="flex items-center"><img src="./images/logo-full.png" alt="WOOVERSE" class="h-8 w-auto"></a>
+        <div class="hidden md:flex items-center gap-8">
+            <a href="./index.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">首页</a>
+            <a href="./flow-s.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">Flow S</a>
+            <a href="./solution.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">解决方案</a>
+            <a href="./ai-coach.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">AI教练</a>
+            <a href="./about.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">关于我们</a>
+            <a href="./news.html" class="text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors text-sm font-medium">新闻</a>
+        </div>
+        <div class="hidden md:block">
+            <button onclick="openModal('modal-booking')" class="h-11 px-6 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white text-sm font-semibold shadow-lg btn-primary">预约体验</button>
+        </div>
+        <button id="menu-toggle" class="md:hidden text-[var(--text)] text-2xl">☰</button>
+    </div>
+    <div id="mobile-menu" class="fixed inset-0 bg-white/98 backdrop-blur-xl z-40 translate-x-full transition-transform duration-400 md:hidden flex flex-col items-center justify-center gap-8">
+        <button id="menu-close" class="absolute top-6 right-6 text-3xl text-[var(--text)]">×</button>
+        <a href="./index.html" class="text-2xl font-semibold text-[var(--text)]">首页</a>
+        <a href="./flow-s.html" class="text-2xl font-semibold text-[var(--text)]">Flow S</a>
+        <a href="./solution.html" class="text-2xl font-semibold text-[var(--text)]">解决方案</a>
+        <a href="./ai-coach.html" class="text-2xl font-semibold text-[var(--text)]">AI教练</a>
+        <a href="./about.html" class="text-2xl font-semibold text-[var(--text)]">关于我们</a>
+        <a href="./news.html" class="text-2xl font-semibold text-[var(--text)]">新闻</a>
+        <button onclick="openModal('modal-booking')" class="mt-4 h-12 px-8 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white font-semibold">预约体验</button>
+    </div>
+</nav>
+
+<main>
+    <!-- Hero -->
+    <section class="pt-[128px] pb-20 bg-white">
+        <div class="max-w-[1200px] mx-auto px-[5%] text-center reveal">
+            <h1 class="text-[32px] md:text-[48px] font-extrabold leading-[1.1] mb-6">能做事的人，<br>不是只会说的人</h1>
+            <p class="text-lg text-[var(--text-muted)] max-w-[700px] mx-auto leading-relaxed">用AI与硬件重新定义滑雪体验，让每一次滑行都被看见、被分析、被保护。</p>
+        </div>
+    </section>
+
+    <!-- 使命 -->
+    <section class="bg-[var(--bg-secondary)] py-24">
+        <div class="max-w-[800px] mx-auto px-[5%] text-center reveal">
+            <h2 class="text-[24px] md:text-[40px] font-bold leading-[1.2] mb-8">我们的使命</h2>
+            <p class="text-lg text-[var(--text-muted)] leading-relaxed mb-6">
+                滑雪是一项充满自由与激情的运动，但同时也是一项高风险运动。每年都有数千起滑雪意外发生，而救援不及时、教学不标准、数据缺失是行业长期存在的痛点。
+            </p>
+            <p class="text-lg text-[var(--text-muted)] leading-relaxed mb-6">
+                WOOVERSE 悟境科技成立于2025年，我们坚信技术与硬件的结合能够为滑雪产业带来真正的数字化变革。从智能雪镜到AI教练，从SOS救援到雪场管理，我们构建的是一个完整的滑雪安全与体验生态。
+            </p>
+            <p class="text-lg text-[var(--text-muted)] leading-relaxed">
+                我们的目标很简单：让每一次滑雪更安全、更专业、更可分享。
+            </p>
+        </div>
+    </section>
+
+    <!-- 团队 -->
+    <section class="bg-white py-24">
+        <div class="max-w-[1200px] mx-auto px-[5%]">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-[24px] md:text-[40px] font-bold leading-[1.2]">核心团队</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-[var(--bg-secondary)] rounded-2xl p-8 reveal">
+                    <div class="w-20 h-20 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white font-bold text-2xl mb-6">DL</div>
+                    <h3 class="text-xl font-semibold mb-1">Daniel Liu</h3>
+                    <p class="text-[var(--secondary-deep)] text-sm font-medium mb-4">CEO / 联合创始人</p>
+                    <p class="text-[var(--text-muted)] leading-relaxed text-sm">十年创业经验，多次成功0-1项目落地。懂赚钱：从0到1构建商业闭环，擅长在复杂市场中找到产品-市场契合点。曾主导多个硬件产品的商业化落地，累计销售额过亿。</p>
+                </div>
+                <div class="bg-[var(--bg-secondary)] rounded-2xl p-8 reveal" style="transition-delay:0.1s">
+                    <div class="w-20 h-20 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] flex items-center justify-center text-white font-bold text-2xl mb-6">DL</div>
+                    <h3 class="text-xl font-semibold mb-1">David Lee</h3>
+                    <p class="text-[var(--secondary-deep)] text-sm font-medium mb-4">CCO / 联合创始人</p>
+                    <p class="text-[var(--text-muted)] leading-relaxed text-sm">十年全球500强商务高管，拥有深厚的销售管理、流程制定与B端商务能力。懂卖货：搞定复杂的销售链路关系，0-1搭建销售体系。曾负责亚太区渠道拓展，管理超过200家经销商网络。</p>
+                </div>
+                <div class="bg-[var(--bg-secondary)] rounded-2xl p-8 reveal" style="transition-delay:0.2s">
+                    <div class="w-20 h-20 rounded-full bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center text-white font-bold text-2xl mb-6">CT</div>
+                    <h3 class="text-xl font-semibold mb-1">技术合伙人（待定）</h3>
+                    <p class="text-[var(--secondary-deep)] text-sm font-medium mb-4">CTO / 联合创始人</p>
+                    <p class="text-[var(--text-muted)] leading-relaxed text-sm">前大疆影像算法工程师，主导运动相机视觉算法与端侧AI部署。在计算机视觉、嵌入式系统与多模态AI领域拥有深厚积累，正在寻找志同道合的技术领袖共同加入。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 发展历程 -->
+    <section class="bg-[var(--bg-secondary)] py-24">
+        <div class="max-w-[800px] mx-auto px-[5%]">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-[24px] md:text-[40px] font-bold leading-[1.2]">发展历程</h2>
+            </div>
+            <div class="reveal">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="text-sm text-[var(--primary)] font-semibold mb-1">2025年12月</div>
+                    <h3 class="text-lg font-semibold mb-2">Idea 验证</h3>
+                    <p class="text-[var(--text-muted)] text-sm">创始人团队完成市场调研与技术可行性验证，确定智能滑雪镜+AI教练的产品方向。</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="text-sm text-[var(--primary)] font-semibold mb-1">2026年2月</div>
+                    <h3 class="text-lg font-semibold mb-2">公司成立 / 原型开发</h3>
+                    <p class="text-[var(--text-muted)] text-sm">WOOVERSE 悟境科技正式注册成立，完成首款原型机开发与核心算法验证。</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="text-sm text-[var(--primary)] font-semibold mb-1">2026</div>
+                    <h3 class="text-lg font-semibold mb-2">产品发布 / 天使轮融资</h3>
+                    <p class="text-[var(--text-muted)] text-sm">Flow S 智能雪镜正式发布，WOOVERSE 完成天使轮融资，WOO创投领投。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 联系信息 -->
+    <section class="bg-white py-24">
+        <div class="max-w-[800px] mx-auto px-[5%] text-center reveal">
+            <h2 class="text-[24px] md:text-[40px] font-bold leading-[1.2] mb-8">联系我们</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="text-2xl mb-3">📍</div>
+                    <h4 class="font-semibold mb-2">深圳总部</h4>
+                    <p class="text-sm text-[var(--text-muted)]">深圳市南山区科技园<br></p>
+                </div>
+                <div>
+                    <div class="text-2xl mb-3">✉️</div>
+                    <h4 class="font-semibold mb-2">商务邮箱</h4>
+                    <p class="text-sm text-[var(--text-muted)]">business@wooverse.cn</p>
+                </div>
+                <div>
+                    <div class="text-2xl mb-3">📰</div>
+                    <h4 class="font-semibold mb-2">媒体联络</h4>
+                    <p class="text-sm text-[var(--text-muted)]">media@wooverse.cn</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="bg-[#1A1A2E] text-white">
+    <div class="bg-[#0F0F1A] h-14 flex items-center justify-center text-sm text-gray-400">
+        <span>WOOVERSE 正在开放融资</span><span class="mx-2">|</span>
+        <a href="./investors.html" class="text-[var(--secondary)] hover:underline">投资者请访问 /investors →</a>
+    </div>
+    <div class="max-w-[1200px] mx-auto px-[5%] py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-8">
+        <div>
+            <img src="./images/logo.png" alt="WOOVERSE" class="h-8 w-auto brightness-0 invert mb-4">
+            <p class="text-sm text-gray-400 leading-relaxed max-w-[280px]">WOOVERSE悟境科技，专注智能滑雪装备与雪场数字化解决方案，让每一次滑雪更安全、更专业、更可分享。</p>
+        </div>
+        <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">产品</h4>
+            <ul class="space-y-2 text-sm text-gray-400">
+                <li><a href="./flow-s.html" class="hover:text-[var(--secondary)] transition-colors">Flow S</a></li>
+                <li><a href="./ai-coach.html" class="hover:text-[var(--secondary)] transition-colors">AI教练</a></li>
+                <li><a href="#" class="hover:text-[var(--secondary)] transition-colors">配件</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">合作</h4>
+            <ul class="space-y-2 text-sm text-gray-400">
+                <li><a href="./solution.html" class="hover:text-[var(--secondary)] transition-colors">雪场合作</a></li>
+                <li><a href="#" onclick="openModal('modal-coach')" class="hover:text-[var(--secondary)] transition-colors">教练入驻</a></li>
+                <li><a href="#" onclick="openModal('modal-kol')" class="hover:text-[var(--secondary)] transition-colors">KOL合作</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">公司</h4>
+            <ul class="space-y-2 text-sm text-gray-400">
+                <li><a href="./about.html" class="hover:text-[var(--secondary)] transition-colors">关于我们</a></li>
+                <li><a href="./news.html" class="hover:text-[var(--secondary)] transition-colors">新闻动态</a></li>
+                <li><a href="#" class="hover:text-[var(--secondary)] transition-colors">加入我们</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">联系</h4>
+            <ul class="space-y-2 text-sm text-gray-400">
+                <li><a href="./solution.html" class="hover:text-[var(--secondary)] transition-colors">商务咨询</a></li>
+                <li><a href="./investors.html" class="hover:text-[var(--secondary)] transition-colors">投资者关系</a></li>
+                <li><a href="#" class="hover:text-[var(--secondary)] transition-colors">客服支持</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="border-t border-white/10 max-w-[1200px] mx-auto px-[5%] py-6 flex flex-col md:flex-row justify-between items-center text-xs text-white/40">
+        <span>© 2026 WOOVERSE Technology. All rights reserved.</span>
+        <div class="flex gap-4 mt-2 md:mt-0"><a href="#" class="hover:text-white/60">隐私政策</a><a href="#" class="hover:text-white/60">服务条款</a></div>
+    </div>
+</footer>
+
+<div id="modal-booking" class="modal-overlay fixed inset-0 z-[60] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div class="modal-container bg-white rounded-[20px] p-8 md:p-10 max-w-[480px] w-full relative max-h-[90vh] overflow-y-auto">
+        <button onclick="closeModal('modal-booking')" class="absolute top-4 right-4 text-2xl text-[var(--text-muted)] hover:text-[var(--text)]">×</button>
+        <div id="booking-form-content">
+            <h3 class="text-2xl font-bold mb-2">预约体验</h3>
+            <p class="text-sm text-[var(--text-muted)] mb-6">成为 Flow S 首批体验官</p>
+            <form onsubmit="handleBookingSubmit(event)">
+                <div class="mb-4"><label class="block text-sm font-medium mb-2">姓名 <span class="text-[var(--danger)]">*</span></label><input type="text" id="booking-name" required class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm" placeholder="请输入您的姓名"></div>
+                <div class="mb-4"><label class="block text-sm font-medium mb-2">手机号 <span class="text-[var(--danger)]">*</span></label><input type="tel" id="booking-phone" required pattern="^1[3-9]\d{9}$" class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm" placeholder="请输入大陆手机号"></div>
+                <div class="mb-4"><label class="block text-sm font-medium mb-2">常用雪场</label><input type="text" id="booking-resort" class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm" placeholder="例如：崇礼万龙"></div>
+                <div class="mb-6"><label class="block text-sm font-medium mb-2">滑雪水平</label><select id="booking-level" class="w-full px-4 py-3 rounded-xl border border-[var(--border)] text-sm bg-white"><option value="初学者">初学者</option><option value="中级">中级</option><option value="高级">高级</option><option value="专业">专业</option></select></div>
+                <button type="submit" class="w-full h-12 rounded-full bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] text-white font-semibold btn-primary">提交预约</button>
+            </form>
+        </div>
+        <div id="booking-success" class="hidden text-center py-8"><div class="success-check">✓</div><h3 class="text-xl font-bold mb-2">预约成功</h3><p class="text-[var(--text-muted)]">我们会尽快联系您</p></div>
+    </div>
+</div>
+<div id="modal-coach" class="modal-overlay fixed inset-0 z-[60] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4"><div class="modal-container bg-white rounded-[20px] p-8 max-w-[480px] w-full relative"><button onclick="closeModal('modal-coach')" class="absolute top-4 right-4 text-2xl text-[var(--text-muted)]">×</button><h3 class="text-2xl font-bold mb-2">教练入驻</h3><p class="text-sm text-[var(--text-muted)]">功能即将开放，敬请期待</p></div></div>
+<div id="modal-kol" class="modal-overlay fixed inset-0 z-[60] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4"><div class="modal-container bg-white rounded-[20px] p-8 max-w-[480px] w-full relative"><button onclick="closeModal('modal-kol')" class="absolute top-4 right-4 text-2xl text-[var(--text-muted)]">×</button><h3 class="text-2xl font-bold mb-2">KOL合作</h3><p class="text-sm text-[var(--text-muted)]">功能即将开放，敬请期待</p></div></div>
+
+<script>
+const navbar=document.getElementById('navbar');window.addEventListener('scroll',()=>{window.scrollY>40?navbar.classList.add('scrolled'):navbar.classList.remove('scrolled');});
+document.getElementById('menu-toggle').addEventListener('click',()=>document.getElementById('mobile-menu').classList.remove('translate-x-full'));
+document.getElementById('menu-close').addEventListener('click',()=>document.getElementById('mobile-menu').classList.add('translate-x-full'));
+function openModal(id){const m=document.getElementById(id);m.classList.remove('hidden');requestAnimationFrame(()=>m.classList.add('active','flex'));document.body.style.overflow='hidden';}
+function closeModal(id){const m=document.getElementById(id);m.classList.remove('active');setTimeout(()=>{m.classList.add('hidden');m.classList.remove('flex');},300);document.body.style.overflow='';}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModal(o.id);}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-overlay.active').forEach(m=>closeModal(m.id));});
+function handleBookingSubmit(e){e.preventDefault();const p=document.getElementById('booking-phone').value;if(!/^1[3-9]\d{9}$/.test(p)){alert('请输入正确的大陆手机号');return;}document.getElementById('booking-form-content').classList.add('hidden');document.getElementById('booking-success').classList.remove('hidden');setTimeout(()=>closeModal('modal-booking'),3000);}
+const ro=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');ro.unobserve(e.target);}});},{threshold:0.1});document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+</script>
+</body>
+</html>
