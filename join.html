@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>加入我们 — WOOVERSE</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #fafbfc;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* 导航栏 */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+    }
+    .nav-logo {
+      font-size: 22px;
+      font-weight: 700;
+      color: #7D2DBE;
+      letter-spacing: 1px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+    .nav-links a {
+      font-size: 14px;
+      color: #555;
+      transition: color 0.2s;
+      font-weight: 500;
+    }
+    .nav-links a:hover { color: #7D2DBE; }
+    .nav-links a.active { color: #7D2DBE; font-weight: 600; }
+
+    main { padding-top: 64px; }
+
+    /* Hero */
+    .join-hero {
+      background: linear-gradient(135deg, #7D2DBE 0%, #5a1d8f 100%);
+      color: white;
+      padding: 100px 48px 80px;
+      text-align: center;
+    }
+    .join-hero h1 {
+      font-size: 42px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      letter-spacing: 2px;
+    }
+    .join-hero p {
+      font-size: 18px;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* 职位列表区 */
+    .careers-section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 80px 24px;
+    }
+    .careers-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    .careers-header h2 {
+      font-size: 32px;
+      color: #1a1a1a;
+      margin-bottom: 12px;
+    }
+    .careers-header p {
+      color: #888;
+      font-size: 16px;
+    }
+
+    /* 职位卡片 */
+    .job-card {
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(0,0,0,0.06);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .job-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(125,45,190,0.08);
+    }
+    .job-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .job-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    .job-meta {
+      display: flex;
+      gap: 16px;
+      font-size: 14px;
+      color: #888;
+    }
+    .job-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .job-positioning {
+      color: #555;
+      line-height: 1.8;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px dashed #eee;
+    }
+    .job-section-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #7D2DBE;
+      margin: 20px 0 12px;
+    }
+    .job-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 20px;
+    }
+    .job-list li {
+      position: relative;
+      padding-left: 16px;
+      margin-bottom: 10px;
+      color: #555;
+      line-height: 1.7;
+      font-size: 14.5px;
+    }
+    .job-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: #7D2DBE;
+      font-weight: bold;
+    }
+    .job-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 24px 0;
+    }
+    .tag {
+      background: rgba(125,45,190,0.08);
+      color: #7D2DBE;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .salary {
+      color: #7D2DBE;
+      font-weight: 600;
+      font-size: 15px;
+      margin: 8px 0 20px;
+    }
+    .apply-btn {
+      display: inline-block;
+      background: #7D2DBE;
+      color: white;
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      transition: background 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .apply-btn:hover { background: #6a25a0; }
+
+    /* 通用投递区 */
+    .apply-section {
+      background: white;
+      border-radius: 16px;
+      padding: 48px;
+      text-align: center;
+      border: 1px solid rgba(0,0,0,0.06);
+      margin-top: 48px;
+    }
+    .apply-section h3 {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    .apply-section p {
+      color: #666;
+      margin-bottom: 8px;
+    }
+    .email-link {
+      color: #7D2DBE;
+      font-size: 20px;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    /* Footer */
+    footer {
+      background: #1a1a1a;
+      color: #aaa;
+      text-align: center;
+      padding: 40px 24px;
+      font-size: 14px;
+      margin-top: 60px;
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; }
+      .nav-links { gap: 16px; }
+      .nav-links a { font-size: 13px; }
+      .join-hero { padding: 80px 24px 60px; }
+      .join-hero h1 { font-size: 28px; }
+      .job-card { padding: 28px; }
+      .job-header { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 导航栏 -->
+  <nav>
+    <a href="index.html" class="nav-logo">WOOVERSE</a>
+    <div class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="flow-s.html">Flow S</a>
+      <a href="solution.html">解决方案</a>
+      <a href="ai-coach.html">AI教练</a>
+      <a href="about.html">关于我们</a>
+      <a href="investors.html">新闻</a>
+      <a href="join.html" class="active">加入我们</a>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Hero -->
+    <section class="join-hero">
+      <h1>JOIN WOOVERSE</h1>
+      <p>与我们一起，用 AI 重新定义冰雪运动体验。寻找热爱技术、热爱雪场的 Builder。</p>
+    </section>
+
+    <!-- 职位列表 -->
+    <section class="careers-section">
+      <div class="careers-header">
+        <h2>开放职位</h2>
+        <p>杭州 / 深圳（可选）· 全职 · 早期核心团队 · 直接向创始人汇报</p>
+      </div>
+
+      <!-- 职位 1：战略 / 融资 / 财务经理 -->
+      <div class="job-card">
+        <div class="job-header">
+          <div class="job-title">战略 / 融资 / 财务经理</div>
+          <div class="job-meta">
+            <span>📍 杭州 / 深圳</span>
+            <span>💼 全职</span>
+          </div>
+        </div>
+        <div class="job-positioning">
+          兼具战略规划、融资落地与财务管控能力的复合型 Builder，能够在创业早期阶段从 0 到 1 搭建战略、融资与财务管理体系，并在消费科技 / 智能硬件赛道中，完成从商业计划到资金到账、从财务规范到资源调配的全链路闭环。
+        </div>
+        <div class="job-section-title">岗位职责</div>
+        <ul class="job-list">
+          <li>制定公司短、中、长期战略规划，完成市场洞察、竞争分析、商业模式迭代及关键路径拆解；</li>
+          <li>主导融资全流程，包括 BP 撰写、财务模型搭建、投资人路演、尽职调查配合及交易条款谈判；</li>
+          <li>搭建并管理早期财务体系，涵盖预算编制、现金流管理、成本管控、财务合规及基础税务筹划；</li>
+          <li>维护投资人关系，定期输出经营分析与财务报告，支持后续轮次融资与战略资源引入；</li>
+          <li>参与核心商务谈判（供应商、渠道、战略合作），从财务与战略视角评估合作可行性；</li>
+          <li>建立关键经营数据仪表盘，为产品、营销与供应链决策提供数据支持与风险提示。</li>
+        </ul>
+        <div class="job-section-title">任职要求</div>
+        <ul class="job-list">
+          <li>本科及以上学历，财务、金融、经济、MBA 等相关专业优先；5 年以上战略、投融资或财务管理相关经验；</li>
+          <li>具备从 0 到 1 的早期项目融资经验，完整主导或深度参与过至少一轮机构融资；</li>
+          <li>精通财务建模、估值分析、Cap Table 管理及投资条款设计，熟悉 VIE / 人民币基金架构差异；</li>
+          <li>熟悉智能硬件、消费电子或生活方式品牌的商业逻辑与成本结构，有供应链财务视角加分；</li>
+          <li>具备优秀的商业谈判能力、跨部门推动力及资源整合能力；</li>
+          <li>滑雪运动爱好者加分，了解滑雪人群消费心理及产业上下游；</li>
+          <li>创业心态，能适应高强度与多线程工作，英文流利加分。</li>
+        </ul>
+        <div class="salary">年薪 35-70 万（13-15 薪）+ 期权</div>
+        <div class="job-tags">
+          <span class="tag">战略规划</span>
+          <span class="tag">融资</span>
+          <span class="tag">财务管控</span>
+          <span class="tag">早期项目</span>
+        </div>
+        <a href="mailto:hr@wooverse.cn?subject=应聘战略融资财务经理-姓名" class="apply-btn">投递简历</a>
+      </div>
+
+      <!-- 职位 2：CMO / VP Marketing -->
+      <div class="job-card">
+        <div class="job-header">
+          <div class="job-title">CMO / VP Marketing</div>
+          <div class="job-meta">
+            <span>📍 杭州 / 深圳</span>
+            <span>💼 全职</span>
+          </div>
+        </div>
+        <div class="job-positioning">
+          兼具品牌战略、产品营销、GTM、增长与渠道商业化能力的 Builder 型 CMO/VP Marketing，能够在创业阶段从 0 到 1 搭建营销体系，并在消费科技 / 硬件 / 生活方式品牌场景中，完成品牌与销售双轮驱动。直接向创始人汇报。
+        </div>
+        <div class="job-section-title">岗位职责</div>
+        <ul class="job-list">
+          <li>制定 Flow 滑雪镜整体品牌战略，从品牌设计、产品调性、视觉体系到品牌故事的从 0 到 1 搭建；</li>
+          <li>主导产品 GTM（Go-to-Market）策略，统筹产品推广、广告投放、内容营销与公关传播全链路；</li>
+          <li>负责海内外（欧美日韩）电商平台的品牌推广与投放策略，建立差异化渠道打法；</li>
+          <li>统筹线下渠道品牌呈现，包括雪场门店陈列、展会布展、零售终端视觉设计；</li>
+          <li>负责软件 / App 及数字产品的 UI/UX 视觉方向把控与内容设计体系搭建；</li>
+          <li>搭建早期市场与品牌团队，管理内外部设计、投放、公关资源；</li>
+          <li>监控品牌声量、投放 ROI 与增长指标，以数据驱动营销决策与预算分配。</li>
+        </ul>
+        <div class="job-section-title">任职要求</div>
+        <ul class="job-list">
+          <li>本科及以上学历，市场营销、品牌管理、设计或相关专业优先；6 年以上消费品、硬件或生活方式品牌相关经验；</li>
+          <li>具备从 0 到 1 的品牌策划与搭建经验，完整主导过至少一个消费品牌的早期市场落地；</li>
+          <li>熟悉产品推广策略设计、内容创意、广告投放流程，并有规模化落地执行经验；</li>
+          <li>熟悉海内外（欧美日韩）主流电商平台与社交媒体平台的推广逻辑与投放差异化；</li>
+          <li>具备品牌设计审美与指导能力，熟悉品牌设计相关工具与视觉语言体系；</li>
+          <li>必须是滑雪爱好者，深刻理解滑雪人群消费心理、社群文化与产业上下游；</li>
+          <li>创业心态，具备极强的沟通能力、跨部门推动力与资源整合能力。</li>
+        </ul>
+        <div class="salary">年薪 40-80 万（13-15 薪）+ 期权</div>
+        <div class="job-tags">
+          <span class="tag">品牌战略</span>
+          <span class="tag">GTM</span>
+          <span class="tag">增长</span>
+          <span class="tag">渠道商业化</span>
+        </div>
+        <a href="mailto:hr@wooverse.cn?subject=应聘CMO/VP Marketing-姓名" class="apply-btn">投递简历</a>
+      </div>
+
+      <!-- 职位 3：AI 产品经理 -->
+      <div class="job-card">
+        <div class="job-header">
+          <div class="job-title">AI 产品经理</div>
+          <div class="job-meta">
+            <span>📍 杭州 / 深圳</span>
+            <span>💼 全职</span>
+          </div>
+        </div>
+        <div class="job-positioning">
+          兼具 AI 技术理解力、用户场景洞察力与产品交付执行力的 Builder 型 AI 产品经理，能够在创业阶段从 0 到 1 定义并落地 AI 滑雪教练 / 视频分析等核心功能，完成算法、数据与用户体验的三角闭环。
+        </div>
+        <div class="job-section-title">岗位职责</div>
+        <ul class="job-list">
+          <li>负责 AI 滑雪教练、姿态识别、视频分析、动作评分等核心功能的产品定义、PRD 撰写与版本迭代；</li>
+          <li>深入理解计算机视觉（CV）、多模态大模型等 AI 技术在运动场景的应用边界，与算法团队共建技术路线；</li>
+          <li>设计数据采集、标注与反馈闭环机制，推动算法模型持续优化与场景准确率提升；</li>
+          <li>主导 AI 功能的用户体验设计，确保技术能力转化为用户可感知、可传播的产品价值；</li>
+          <li>监控核心数据指标（识别准确率、用户留存、分享率），基于数据驱动产品决策；</li>
+          <li>探索 AI 功能在社交裂变、内容创作、付费转化中的创新玩法，支持增长与商业化目标。</li>
+        </ul>
+        <div class="job-section-title">任职要求</div>
+        <ul class="job-list">
+          <li>本科及以上学历，计算机、人工智能、数据科学或相关专业优先；3 年以上 AI 产品经理经验；</li>
+          <li>完整主导或深度参与过至少一款 AI 功能从 0 到 1 的上线，具备算法对接与数据闭环搭建经验；</li>
+          <li>熟悉计算机视觉、姿态估计、视频理解等技术的应用场景与局限性，能与算法工程师高效沟通；</li>
+          <li>具备极强的用户同理心与场景拆解能力，有运动健康、户外科技或视频创作类产品经验加分；</li>
+          <li>熟练使用产品原型工具、数据分析工具，具备基础的数据分析与技术文档阅读能力；</li>
+          <li>必须是滑雪爱好者，熟悉单板 / 双板技术动作与滑雪教学体系；</li>
+          <li>创业心态，结果导向，跨部门推动力强，英文读写流利加分。</li>
+        </ul>
+        <div class="salary">年薪 35-75 万（13-15 薪）+ 期权</div>
+        <div class="job-tags">
+          <span class="tag">AI 产品</span>
+          <span class="tag">计算机视觉</span>
+          <span class="tag">姿态识别</span>
+          <span class="tag">数据驱动</span>
+        </div>
+        <a href="mailto:hr@wooverse.cn?subject=应聘AI产品经理-姓名" class="apply-btn">投递简历</a>
+      </div>
+
+      <!-- 职位 4：光波导硬件工程师 -->
+      <div class="job-card">
+        <div class="job-header">
+          <div class="job-title">光波导硬件工程师</div>
+          <div class="job-meta">
+            <span>📍 杭州 / 深圳</span>
+            <span>💼 全职</span>
+          </div>
+        </div>
+        <div class="job-positioning">
+          深耕 AR 光学显示技术的硬件工程师，能够在创业阶段从 0 到 1 主导 Flow 滑雪镜的光波导显示方案设计、光学系统验证及量产导入，在极端运动场景（低温、高冲击、强光）下实现高亮度、低功耗、轻量化的近眼显示体验。
+        </div>
+        <div class="job-section-title">岗位职责</div>
+        <ul class="job-list">
+          <li>主导光波导（Waveguide）光学方案选型与架构设计，包括耦入 / 耦出光栅、微透镜阵列等关键光学元件设计；</li>
+          <li>负责光学系统建模与仿真（Zemax / LightTools / Lumerical 等），优化 MTF、亮度均匀性、眼动范围（Eyebox）与光效；</li>
+          <li>针对滑雪场景特殊需求（-20°C 低温、高湿度、强紫外 / 雪地反光），设计环境鲁棒性光学方案与补偿算法；</li>
+          <li>对接光学供应链（光波导晶圆、微纳加工、镀膜厂商），完成 DFM 评估、工艺验证与良率提升；</li>
+          <li>主导光学样机装调、显示效果评测及可靠性测试，输出光学规格书与测试标准；</li>
+          <li>协同结构、电子、算法团队，平衡光学性能与整机重量、功耗、散热及成本目标。</li>
+        </ul>
+        <div class="job-section-title">任职要求</div>
+        <ul class="job-list">
+          <li>本科及以上学历，光学工程、物理、电子工程或相关专业；3 年以上 AR / VR 光学显示研发经验；</li>
+          <li>精通光波导、光栅、几何光学或衍射光学设计，具备完整的光学系统从设计到量产落地经验；</li>
+          <li>熟练使用 Zemax、Code V、LightTools、Lumerical 等光学设计与仿真软件；</li>
+          <li>熟悉微纳加工工艺（光刻、刻蚀、纳米压印）及光学镀膜、贴合、封装等量产环节；</li>
+          <li>具备消费级硬件量产经验，熟悉光学良率管控、成本拆解与供应链质量管理；</li>
+          <li>滑雪运动爱好者或户外运动装备使用者加分，了解运动场景下近眼显示的人因工程需求；</li>
+          <li>创业心态，动手能力强，具备跨部门协作与英文技术文档读写能力。</li>
+        </ul>
+        <div class="salary">年薪 30-70 万（13-15 薪）+ 期权</div>
+        <div class="job-tags">
+          <span class="tag">AR 光学</span>
+          <span class="tag">光波导</span>
+          <span class="tag">微纳加工</span>
+          <span class="tag">量产导入</span>
+        </div>
+        <a href="mailto:hr@wooverse.cn?subject=应聘光波导硬件工程师-姓名" class="apply-btn">投递简历</a>
+      </div>
+
+      <!-- 职位 5：品牌增长设计师 -->
+      <div class="job-card">
+        <div class="job-header">
+          <div class="job-title">品牌增长设计师</div>
+          <div class="job-meta">
+            <span>📍 杭州 / 深圳</span>
+            <span>💼 全职</span>
+          </div>
+        </div>
+        <div class="job-positioning">
+          兼具品牌视觉、营销设计、基础 UI/UX 和商业表达能力的 Brand & Growth Designer，能够独立支撑商品推广文案设计、PPT 视觉整理、品牌视觉延展及营销场景落地。直接向 CMO/创始人汇报。
+        </div>
+        <div class="job-section-title">岗位职责</div>
+        <ul class="job-list">
+          <li>负责产品卖点图、活动图、推广图、Logo 及品牌 VI 系统的视觉设计与延展；</li>
+          <li>负责广告素材创意产出，协助制定广告创意方向与视觉策略；</li>
+          <li>负责电商详情页、众筹页、活动页的视觉设计，包含产品图、Headline、卖点标题及推广文案排版；</li>
+          <li>负责品牌视觉在营销场景（社交媒体、线下物料、展会）的标准化落地；</li>
+          <li>负责软件 / App 的 UI/UX 视觉效果呈现与界面设计；</li>
+          <li>协助融资 BP、商务 PPT 及对外推介材料的视觉整理与排版优化；</li>
+          <li>统筹外部设计资源（摄影、插画、3D 渲染等），确保品牌输出一致性。</li>
+        </ul>
+        <div class="job-section-title">任职要求</div>
+        <ul class="job-list">
+          <li>本科及以上学历，视觉传达、数字媒体或相关专业；5 年以上消费品、运动用品、DTC 或创业公司设计经验；</li>
+          <li>精通 Adobe Creative Suite（PS/AI/ID）与 Figma 等专业视觉工具；</li>
+          <li>必须具备品牌视觉设计能力，有独立分析、提案、视觉成品从 0 到 1 落地的完整经验；</li>
+          <li>具备独立调配外部设计资源的能力，良好的沟通能力与跨部门协作能力；</li>
+          <li>滑雪运动爱好者加分，了解滑雪装备审美与户外生活方式视觉语言；</li>
+          <li>精通英文听读写，具备海外生活或跨文化设计背景加分；</li>
+          <li>创业心态，能适应快速迭代与多线程项目节奏。</li>
+        </ul>
+        <div class="salary">年薪 20-40 万（13-15 薪）+ 期权</div>
+        <div class="job-tags">
+          <span class="tag">品牌视觉</span>
+          <span class="tag">营销设计</span>
+          <span class="tag">UI/UX</span>
+          <span class="tag">广告创意</span>
+        </div>
+        <a href="mailto:hr@wooverse.cn?subject=应聘品牌增长设计师-姓名" class="apply-btn">投递简历</a>
+      </div>
+
+      <!-- 通用投递 -->
+      <div class="apply-section">
+        <h3>没有找到合适的职位？</h3>
+        <p>如果你是滑雪爱好者、AI 研究者或硬件极客，</p>
+        <p>相信你能为 WOOVERSE 带来独特价值。</p>
+        <p style="margin-top: 24px;">直接发送简历与自我介绍至</p>
+        <a href="mailto:hr@wooverse.cn" class="email-link">hr@wooverse.cn</a>
+        <p style="margin-top: 12px; font-size: 14px; color: #aaa;">邮件标题：姓名 + 意向职位 / 自荐</p>
+        <p style="margin-top: 8px; font-size: 13px; color: #aaa;">我们通常在 3 个工作日内反馈</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 WOOVERSE 悟境科技. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>
