@@ -104,7 +104,7 @@
             <div class="bg-[var(--bg-secondary)] rounded-2xl p-8 border border-[var(--border)]">
                 <p class="text-[var(--text-muted)] mb-4">投资咨询请联系</p>
                 <div class="flex items-center justify-center gap-3 mb-2">
-                    <span class="text-lg font-semibold" id="investor-email">investors@wooverse.cn</span>
+                    <span class="text-lg font-semibold" id="investor-email">contact@wooverse.cn</span>
                     <button onclick="copyEmail()" class="px-3 py-1 rounded-lg border border-[var(--primary)] text-[var(--primary)] text-sm hover:bg-[var(--primary)] hover:text-white transition-all">复制</button>
                 </div>
                 <p class="text-xs text-[var(--text-muted)] mt-4">我们重视每一位投资人的时间与信任，所有信息严格保密。</p>
@@ -191,7 +191,7 @@ function closeModal(id){const m=document.getElementById(id);m.classList.remove('
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModal(o.id);}));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-overlay.active').forEach(m=>closeModal(m.id));});
 function handleBookingSubmit(e){e.preventDefault();const p=document.getElementById('booking-phone').value;if(!/^1[3-9]\d{9}$/.test(p)){alert('请输入正确的大陆手机号');return;}document.getElementById('booking-form-content').classList.add('hidden');document.getElementById('booking-success').classList.remove('hidden');setTimeout(()=>closeModal('modal-booking'),3000);}
-function copyEmail(){navigator.clipboard.writeText('investors@wooverse.cn').then(()=>alert('邮箱已复制到剪贴板'));}
+function copyEmail(){navigator.clipboard.writeText('contact@wooverse.cn').then(()=>alert('邮箱已复制到剪贴板'));}
 const ro=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');ro.unobserve(e.target);}});},{threshold:0.1});document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
 </script>
 </body>
